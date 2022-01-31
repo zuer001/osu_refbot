@@ -135,6 +135,7 @@ def handler(word, word_eol, userdata):
     if not word:
         return hexchat.EAT_ALL
     elif word[0] == 'botstart':
+        hexchat.unhook(bothook)
         global match
         match = init_match()
         match['team1'] = word[2]
@@ -148,7 +149,20 @@ def roomhandler(word, word_eol, userdata):
         hexchat.unhook(roomhook)
         matchroom = hexchat.get_context()
         setup_room(match,matchroom)
+        global messagehook
+        messagehook = hexchat.hook_print('Channel Message',messagehandler)
+        global yourmessagehook
+        yourmessagehook = hexchat.hook_print('Your Message',messagehandler)
 
-        return hexchat.EAT_HEXCHAT
+        return hexchat.EAT_NONE
 
-hexchat.hook_command("BOTSTART", handler)
+def messagehandler(word, word_eol, userdata):
+    matchroom = hexchat.get_context()
+    if word[0] == 'BanchoBot':
+        matchroom.prnt('Successfully caught BanchoBot said {}'.format(word[1]))
+    elif word:
+        matchroom.prnt('You said something')
+    return hexchat.EAT_NONE
+
+global bothook
+bothook = hexchat.hook_command("BOTSTART", handler)
