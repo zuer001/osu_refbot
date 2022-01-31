@@ -12,8 +12,8 @@ def init_match():
         'team2': '',
         'BOs': '',
         'players':{
-            'team1_players': ['YuukiNoTsubasa'],
-            'team2_players': ['']
+            'team1_players': ['Truth_you_left'],
+            'team2_players': ['YuukiNoTsubasa']
         },
         'mappool': {},
         'picked_maps': [],
@@ -101,7 +101,7 @@ def ban_map(people,map,matchroom):
     if next_to_ban ==1:
         if people in match['players']['team1_players']:
             match['banned_maps'].append(map)
-            matchroom.prnt('{}banned'.format(map))
+            matchroom.command('say {} banned'.format(map))
             next_to_ban=2
             match['ban_num']-=1
             if match['ban_num']<=0:
@@ -114,7 +114,7 @@ def ban_map(people,map,matchroom):
     else:
         if people in match['players']['team2_players']:
             match['banned_maps'].append(map)
-            matchroom.prnt('{}banned'.format(map))
+            matchroom.command('say {} banned'.format(map))
             next_to_ban=1
             match['ban_num']-=1
             if match['ban_num']<=0:
