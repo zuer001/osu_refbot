@@ -4,18 +4,25 @@ import threading
 import time
 
 #match setup
-match = {
-    'matchlink': '',
-    'ref': '', #enter your username here
-    'team1': '',
-    'team2': '',
-    'BOs': '',
-    'players': {
-        'team1_players': [''],
-        'team2_players': ['']
-    },
-    'mappool': {}
-}
+def init_match():
+    match = {
+        'matchlink': '',
+        'ref': '', #enter your username here
+        'team1': '',
+        'team2': '',
+        'BOs': '',
+        'players': {
+            'team1_players': ['YuukiNoTsubasa'],
+            'team2_players': ['']
+        },
+        'mappool': {},
+        'picked_maps': [],
+        'banned_maps': [],
+        'teammode': '2',
+        'scoremode': '3',
+        'size': '4'
+    }
+    return match
 
 #create room
 def create_room(acronym,team1,team2):
@@ -29,18 +36,20 @@ def channel_switch(tab):
     return hexchat.find_context(channel = tab)
 
 #setup room
-def setup_room(players,
-    matchroom,
-    teammode = '2',
-    scoremode = '3',
-    size = '4',
-    ):
+def setup_room(match,matchroom):
     """setup match and invites players"""
-    matchroom.command('say !mp set {} {} {}'.format(teammode,scoremode,size))
+    matchroom.command('say !mp set {teammode} {scoremode} {size}'.format_map(match))
     matchroom.command('say !mp mods Freemod')
+    players = []
+    for key in match['players'].keys():
+        players.append(match['players'].get(key))
     for player in players:
         matchroom.command('query -nofocus {} Your match is Ready! click the link below to join the match'.format(player))
         matchroom.command('say !mp invite {}'.format(player))
+
+#retrieve match infos
+def getmatchinfos(name,team1,team2):
+    pass
 
 #mappool configuration
 mappoolsize = (5,3,3,3,2,1)
@@ -75,9 +84,12 @@ def generate_mappool(mapids,mappoolsize):
     return dict [beatmaptags,mapids]
 
 #change map
-def change_map(mappool,map_num,matchroom):
+def change_map(match,map_num,matchroom):
     """ mapmods are used when applying mods of the maps
         map_num is tag of a single beatmap, such as FM2"""
+    mappool = match.get('mappool')
+    picked_maps = match.get('picked_maps')
+    banned_maps = match.get('banned_maps')
     mapmods = {
         'NM':'NF',
         'HD':'NF HD',
@@ -87,12 +99,16 @@ def change_map(mappool,map_num,matchroom):
     }
 
     if map_num in mappool.keys() and map_num not in banned_maps:
+        picked_maps.append(map_num)
         map_mod = map_num[:3]
         matchroom.command('say !mp mods {}'.format(mapmods[map_mod]))
         matchroom.command('say !mp map {}'.format(map_num))
         matchroom.command('say Nowplaying {}'.format(map_num))
+    elif map_num in mappool.keys() and map_num in picked_maps:
+        matchroom.command('say this map has been picked')
+        matchroom.command('say please try again')
     else:
-        matchroom.command('say this map does not exists or have been banned')
+        matchroom.command('say this map does not exists or have been banned or picked')
         matchroom.command('say please try again')
         matchroom.command('say format is "pick [mapnumber]"')
         matchroom.command('say e.g. pick NM5')
@@ -108,23 +124,19 @@ def ban_map(map_num,matchroom):
         matchroom.command('say format is "ban [mapnumber]"')
         matchroom.command('say e.g. ban NM5')
 
-#set match state
-def matchstate(state,matchroom):
-    """ 0 for warmup state
-        1 for Ban state
-        2 for Pick state
-        3 for lineup state
-        4 for tiebreaker state
-        5 for end state"""
-    pass
-
 #handle messages
 def handler(word, word_eol, userdata):
     """ when hooked, word should be returned with a list contains strings
         word[0] is username
         word[1] is what they said"""
-
-    create_room(word[1],word[2],word[3])
+    if word[0] == 'botstart':
+        match = init_match()
+        match['team1'] = word[2]
+        match['team2'] = word[3]
+        match['BOs'], match['players'], match['mappool'] = getmatchinfos(word[1],word[2],word[3])
+        tab = create_room(word[1],word[2],word[3])
+        matchroom = channel_switch(tab)
+        setup_room(match,matchroom)
 
     return hexchat.EAT_ALL
 
