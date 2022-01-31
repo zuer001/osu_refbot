@@ -13,7 +13,7 @@ def init_match():
         'BOs': '',
         'players': {
             'team1_players': ['YuukiNoTsubasa'],
-            'team2_players': ['YuukiNoTsubasa']
+            'team2_players': ['']
         },
         'mappool': {},
         'picked_maps': [],
@@ -46,8 +46,9 @@ def setup_room(match,matchroom):
         for player in match['players'].get(key):
             players.append(player)
     for player in players:
-        matchroom.command('query -nofocus {} Your match is Ready! click the link below to join the match'.format(player))
-        matchroom.command('say !mp invite {}'.format(player))
+        if player:
+            matchroom.command('query -nofocus {} Your match is Ready! click the link below to join the match'.format(player))
+            matchroom.command('say !mp invite {}'.format(player))
 
 #retrieve match infos
 def getmatchinfos(name,team1,team2):
