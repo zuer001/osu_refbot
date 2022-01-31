@@ -13,7 +13,7 @@ def init_match():
         'BOs': '',
         'players': {
             'team1_players': ['YuukiNoTsubasa'],
-            'team2_players': ['']
+            'team2_players': ['YuukiNoTsubasa']
         },
         'mappool': {},
         'picked_maps': [],
@@ -24,16 +24,17 @@ def init_match():
     }
     return match
 
-#create room
-def create_room(acronym,team1,team2):
-    """returns a tag of room channel"""
-    hexchat.command('query BanchoBot !mp make {}: ({}) vs ({})'.format(acronym,team1,team2))
-    return hexchat.get_info('topic')
-
 #switch to room tab
 def channel_switch(tab):
     """returns a context object"""
     return hexchat.find_context(channel = tab)
+
+#create room
+def create_room(acronym,team1,team2):
+    """returns a tag of room channel"""
+    hexchat.command('query -nofocus BanchoBot !mp make {}: ({}) vs ({})'.format(acronym,team1,team2))
+    global roomhook
+    roomhook = hexchat.hook_print('Focus tab', roomhandler)
 
 #setup room
 def setup_room(match,matchroom):
@@ -42,7 +43,8 @@ def setup_room(match,matchroom):
     matchroom.command('say !mp mods Freemod')
     players = []
     for key in match['players'].keys():
-        players.append(match['players'].get(key))
+        for player in match['players'].get(key):
+            players.append(player)
     for player in players:
         matchroom.command('query -nofocus {} Your match is Ready! click the link below to join the match'.format(player))
         matchroom.command('say !mp invite {}'.format(player))
@@ -129,15 +131,23 @@ def handler(word, word_eol, userdata):
     """ when hooked, word should be returned with a list contains strings
         word[0] is username
         word[1] is what they said"""
-    if word[0] == 'botstart':
+    if not word:
+        return hexchat.EAT_ALL
+    elif word[0] == 'botstart':
+        global match
         match = init_match()
         match['team1'] = word[2]
         match['team2'] = word[3]
-        match['BOs'], match['players'], match['mappool'] = getmatchinfos(word[1],word[2],word[3])
-        tab = create_room(word[1],word[2],word[3])
-        matchroom = channel_switch(tab)
+        create_room(word[1],word[2],word[3])
+        return hexchat.EAT_HEXCHAT
+
+def roomhandler(word, word_eol, userdata):
+    """hook to the matchroom"""
+    if not word:
+        hexchat.unhook(roomhook)
+        matchroom = hexchat.get_context()
         setup_room(match,matchroom)
 
-    return hexchat.EAT_ALL
+        return hexchat.EAT_HEXCHAT
 
 hexchat.hook_command("BOTSTART", handler)
