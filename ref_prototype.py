@@ -11,13 +11,14 @@ def init_match():
         'team1': '',
         'team2': '',
         'BOs': '',
-        'players': {
+        'players':{
             'team1_players': ['YuukiNoTsubasa'],
             'team2_players': ['']
         },
         'mappool': {},
         'picked_maps': [],
         'banned_maps': [],
+        'ban_num':1,
         'teammode': '2',
         'scoremode': '3',
         'size': '4'
@@ -25,6 +26,21 @@ def init_match():
     return match
 
 #switch to room tab
+global next_to_ban
+global next_to_pick
+global bothook
+global roomhook
+global match
+global messagehook
+global yourmessagehook
+global bantime
+global picktime
+global mappoolsize
+bantime=True
+picktime=False
+next_to_pick=1
+next_to_ban=1
+mappoolsize = (5,3,3,3,2,1)
 def channel_switch(tab):
     """returns a context object"""
     return hexchat.find_context(channel = tab)
@@ -33,12 +49,15 @@ def channel_switch(tab):
 def create_room(acronym,team1,team2):
     """returns a tag of room channel"""
     hexchat.command('query -nofocus BanchoBot !mp make {}: ({}) vs ({})'.format(acronym,team1,team2))
+    generate_mappool()
     global roomhook
-    roomhook = hexchat.hook_print('Focus tab', roomhandler)
+    roomhook = hexchat.hook_print('Open Context', roomhandler)
 
 #setup room
 def setup_room(match,matchroom):
     """setup match and invites players"""
+    if '#mp' not in matchroom.get_info('channel'):
+        return
     matchroom.command('say !mp set {teammode} {scoremode} {size}'.format_map(match))
     matchroom.command('say !mp mods Freemod')
     players = []
@@ -49,84 +68,62 @@ def setup_room(match,matchroom):
         if player:
             matchroom.command('query -nofocus {} Your match is Ready! click the link below to join the match'.format(player))
             matchroom.command('say !mp invite {}'.format(player))
-
 #retrieve match infos
 def getmatchinfos(name,team1,team2):
     pass
 
-#mappool configuration
-mappoolsize = (5,3,3,3,2,1)
-mapids = (123456,) #set mapids here
+
 
 #generate a mappool
-def generate_mappool(mapids,mappoolsize):
-    """return a dictionary of mappool
-        mapids is a tuple of beatmapIds
-        mappoolsize is a tuple which consists of mappool mods and how many of them individually
-        it should be formatted like this:
-        mapppoolsize = ([NM],[HD],[HR],[DT],[FM],[TB])
-        if you don't have mods which mentioned above, you should replace it by 0
-        mappoolmods are used when creating keys of the maps"""
-
-    mappoolmods = {
-        '0':'NM',
-        '1':'HD',
-        '2':'HR',
-        '3':'DT',
-        '4':'FM',
-        '5':'TB'
-    }
-
-    beatmaptags = ()
-    for item in mappoolsize:
-        flag = 0
-        while flag < item:
-            flag += 1
-            beatmapTagElement = mappoolmods[item] + str(flag)
-            beatmaptags.append(beatmapTagElement)
-    return dict [beatmaptags,mapids]
-
-#change map
-def change_map(match,map_num,matchroom):
-    """ mapmods are used when applying mods of the maps
-        map_num is tag of a single beatmap, such as FM2"""
-    mappool = match.get('mappool')
-    picked_maps = match.get('picked_maps')
-    banned_maps = match.get('banned_maps')
-    mapmods = {
-        'NM':'NF',
-        'HD':'NF HD',
-        'HR':'NF HR',
-        'DT':'NF DT',
-        'FM':'Freemod'
-    }
-
-    if map_num in mappool.keys() and map_num not in banned_maps:
-        picked_maps.append(map_num)
-        map_mod = map_num[:3]
-        matchroom.command('say !mp mods {}'.format(mapmods[map_mod]))
-        matchroom.command('say !mp map {}'.format(map_num))
-        matchroom.command('say Nowplaying {}'.format(map_num))
-    elif map_num in mappool.keys() and map_num in picked_maps:
-        matchroom.command('say this map has been picked')
-        matchroom.command('say please try again')
-    else:
-        matchroom.command('say this map does not exists or have been banned or picked')
-        matchroom.command('say please try again')
-        matchroom.command('say format is "pick [mapnumber]"')
-        matchroom.command('say e.g. pick NM5')
-
+def generate_mappool():
+    global mappoolsize
+    global match
+    mapname=['NM','HD','HR','DT','FM','TB']
+    index=0
+    for num in mappoolsize:
+        for i in range(num):
+            name=mapname[index]+str(i+1)
+            match['mappool'][name]=123456
+        index+=1
 #ban map
-def ban_map(map_num,matchroom):
-    if map_num in mappool.keys():
-        banned_maps.append(map_num)
-        matchroom.command('say {} is banned from mappool'.format(map_num))
+def ban_map(people,map,matchroom):
+    global match
+    if map in match['banned_maps']:
+        matchroom.command('say this map has been banned')
+        return
+    if map not in match['mappool'].keys():
+        matchroom.command('say not in mappool')
+        print(match)
+        return
+    global next_to_ban
+    global bantime
+    global picktime
+    if next_to_ban ==1:
+        if people in match['players']['team1_players']:
+            match['banned_maps'].append(map)
+            matchroom.prnt('{}banned'.format(map))
+            next_to_ban=2
+            match['ban_num']-=1
+            if match['ban_num']<=0:
+                bantime=False
+                picktime=True
+            return
+        else:
+            matchroom.command('say wrong person to ban')
+            return
     else:
-        matchroom.command('say this map does not exists in this mappool!')
-        matchroom.command('say please try again')
-        matchroom.command('say format is "ban [mapnumber]"')
-        matchroom.command('say e.g. ban NM5')
-
+        if people in match['players']['team2_players']:
+            match['banned_maps'].append(map)
+            matchroom.prnt('{}banned'.format(map))
+            next_to_ban=1
+            match['ban_num']-=1
+            if match['ban_num']<=0:
+                bantime=False
+                picktime=True
+            return
+        else:
+            matchroom.command('say wrong person to ban')
+            return
 #handle messages
 def handler(word, word_eol, userdata):
     """ when hooked, word should be returned with a list contains strings
@@ -135,7 +132,6 @@ def handler(word, word_eol, userdata):
     if not word:
         return hexchat.EAT_ALL
     elif word[0] == 'botstart':
-        hexchat.unhook(bothook)
         global match
         match = init_match()
         match['team1'] = word[2]
@@ -146,7 +142,6 @@ def handler(word, word_eol, userdata):
 def roomhandler(word, word_eol, userdata):
     """hook to the matchroom"""
     if not word:
-        hexchat.unhook(roomhook)
         matchroom = hexchat.get_context()
         setup_room(match,matchroom)
         global messagehook
@@ -154,15 +149,18 @@ def roomhandler(word, word_eol, userdata):
         global yourmessagehook
         yourmessagehook = hexchat.hook_print('Your Message',messagehandler)
 
-        return hexchat.EAT_NONE
+        return hexchat.EAT_ALL
+
 
 def messagehandler(word, word_eol, userdata):
     matchroom = hexchat.get_context()
-    if word[0] == 'BanchoBot':
-        matchroom.prnt('Successfully caught BanchoBot said {}'.format(word[1]))
-    elif word:
-        matchroom.prnt('You said something')
+    global bantime
+    global picktime
+    if '#ban' in word[1] and bantime:
+        command = word[1].split(' ')
+        ban_map(word[0],command[1],matchroom)
+
     return hexchat.EAT_NONE
 
-global bothook
+
 bothook = hexchat.hook_command("BOTSTART", handler)
