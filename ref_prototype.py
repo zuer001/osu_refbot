@@ -177,11 +177,11 @@ def setmap(map,matchroom):
     elif 'NM' in map:
         matchroom.command('say !mp mods NF')
     elif 'HD' in map:
-        matchroom.command('say !mp mods NFHD')
+        matchroom.command('say !mp mods NF HD')
     elif 'HR' in map:
-        matchroom.command('say !mp mods NFHR')
+        matchroom.command('say !mp mods NF HR')
     elif 'DT' in map:
-        matchroom.command('say !mp mods NFDT')
+        matchroom.command('say !mp mods NF DT')
 def pick_order(people,command,matchroom):
     global match
     global rollwinner
