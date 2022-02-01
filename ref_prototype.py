@@ -118,6 +118,8 @@ def ban_map(people,map,matchroom):
             if match['ban_num']<=0:
                 bantime=False
                 picktime=True
+                matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
+                matchroom.command('say You have 120 secs to pick a map!')
             return
         else:
             matchroom.command('say wrong person to ban')
@@ -131,6 +133,8 @@ def ban_map(people,map,matchroom):
             if match['ban_num']<=0:
                 bantime=False
                 picktime=True
+                matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
+                matchroom.command('say You have 120 secs to pick a map!')
             return
         else:
             matchroom.command('say wrong person to ban')
@@ -157,6 +161,7 @@ def pick_map(people,map,matchroom):
             matchroom.command('say {} picked'.format(map))
             next_to_pick=2
             picktime=False
+            matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
             setmap(map,matchroom)
         else:
             matchroom.command('say wrong person to pick')
@@ -166,6 +171,7 @@ def pick_map(people,map,matchroom):
             matchroom.command('say {} picked'.format(map))
             next_to_pick=1
             picktime=False
+            matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
             setmap(map,matchroom)
         else:
             matchroom.command('say wrong person to pick')
@@ -203,6 +209,7 @@ def pick_order(people,command,matchroom):
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose first to pick'.format(match['team1']))
+                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
                 return
             elif command == '#secondpick':
                 next_to_pick=2
@@ -210,6 +217,8 @@ def pick_order(people,command,matchroom):
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose second to pick'.format(match['team1']))
+                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
+                return
     elif rollwinner == 2:
         if people not in match['players']['team2_players']:
             matchroom.command('say wrong person to choose')
@@ -221,6 +230,7 @@ def pick_order(people,command,matchroom):
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose first to pick'.format(match['team2']))
+                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
                 return
             elif command == '#secondpick':
                 next_to_pick=1
@@ -228,6 +238,16 @@ def pick_order(people,command,matchroom):
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose second to pick'.format(match['team2']))
+                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
+
+def greeting_event(word,matchroom):
+    words=word.split(' ')
+    space_num=len(words)-4
+    people=words[0]
+    for i in range(space_num):
+        people=people+'_'+words[i+1]
+    matchroom.command('say Greetings! {} We are in Roll time right now, if you are captain, you can type !roll to roll for your team')
+
 def roll_event(word,matchroom):
     global match
     global next_to_ban
@@ -309,6 +329,8 @@ def messagehandler(word, word_eol, userdata):
             start_event(word[1],matchroom)
         elif 'finished' in word[1]:
             finish_event(word[1],matchroom)
+        elif 'joined' in word[1]:
+            greeting_event(word[1],matchroom)
     elif command[0] == '#ban' and bantime:
         ban_map(word[0],command[1],matchroom)
     elif command[0] == '#pick' and picktime:
