@@ -13,7 +13,7 @@ def init_match():
         'BOs': '',
         'players':{
             'team1_players': ['YuukiNoTsubasa'],
-            'team2_players': ['truth_you_left']
+            'team2_players': ['Truth_you_left']
         },
         'mappool': {},
         'picked_maps': [],
@@ -33,6 +33,7 @@ global roomhook
 global match
 global messagehook
 global yourmessagehook
+global highlighthook
 global bantime
 global picktime
 global choosetime
@@ -182,45 +183,46 @@ def setmap(map,matchroom):
     elif 'DT' in map:
         matchroom.command('say !mp mods NFDT')
 def pick_order(people,command,matchroom):
-    if choosetime is False:
-        return
     global match
     global rollwinner
     global next_to_ban
     global next_to_pick
     global bantime
     global choosetime
-    if rollwinner is 1:
+    if choosetime == False:
+        return
+
+    if rollwinner == 1:
         if people not in match['players']['team1_players']:
             matchroom.command('say wrong person to choose')
             return
         else:
-            if command is '#firstpick':
+            if command == '#firstpick':
                 next_to_ban=2
                 next_to_pick=1
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose first to pick'.format(match['team1']))
                 return
-            elif command is '#secondpick':
+            elif command == '#secondpick':
                 next_to_pick=2
                 next_to_ban=1
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose second to pick'.format(match['team1']))
-    elif rollwinner is 2:
+    elif rollwinner == 2:
         if people not in match['players']['team2_players']:
             matchroom.command('say wrong person to choose')
             return
         else:
-            if command is '#firstpick':
+            if command == '#firstpick':
                 next_to_ban=1
                 next_to_pick=2
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose first to pick'.format(match['team2']))
                 return
-            elif command is '#secondpick':
+            elif command == '#secondpick':
                 next_to_pick=1
                 next_to_ban=2
                 bantime=True
@@ -232,12 +234,21 @@ def roll_event(word,matchroom):
     global next_to_pick
     global team1_roll
     global team2_roll
+    global choosetime
+    global rollwinner
     words=word.split(' ')
-    if words[0] in match['players']['team1_players'] and team1_roll is -1:
-        team1_roll=int(words[2])
-    if words[0] in match['players']['team2_players'] and team2_roll is -1:
-        team2_roll=int(words[2])
-    if team1_roll is not -1 and team2_roll is not -1:
+    space_num=len(words)-4
+    people=words[0]
+    for i in range(space_num):
+        people=people+'_'+words[i+1]
+    print(people)
+    if people in match['players']['team1_players'] and team1_roll == -1:
+        team1_roll=int(words[-2])
+        print(team1_roll)
+    if people in match['players']['team2_players'] and team2_roll == -1:
+        team2_roll=int(words[-2])
+        print(team2_roll)
+    if team1_roll !=  -1 and team2_roll != -1:
         if team1_roll>team2_roll:
             rollwinner=1
             choosetime=True
@@ -268,6 +279,12 @@ def handler(word, word_eol, userdata):
         match['team1'] = word[2]
         match['team2'] = word[3]
         create_room(word[1],word[2],word[3])
+        global messagehook
+        messagehook = hexchat.hook_print('Channel Message',messagehandler)
+        global yourmessagehook
+        yourmessagehook = hexchat.hook_print('Your Message',messagehandler)
+        global highlighthook
+        highlighthook=hexchat.hook_print('Channel Msg Hilight', messagehandler)
     return hexchat.EAT_HEXCHAT
 
 def roomhandler(word, word_eol, userdata):
@@ -275,11 +292,6 @@ def roomhandler(word, word_eol, userdata):
     if not word:
         matchroom = hexchat.get_context()
         setup_room(match,matchroom)
-        global messagehook
-        messagehook = hexchat.hook_print('Channel Message',messagehandler)
-        global yourmessagehook
-        yourmessagehook = hexchat.hook_print('Your Message',messagehandler)
-
     return hexchat.EAT_HEXCHAT
 
 
@@ -288,20 +300,22 @@ def messagehandler(word, word_eol, userdata):
     global bantime
     global picktime
     command = word[1].split(' ')
-    if word[0] is 'BanchoBot':
+    print(word[0])
+    print(word[1])
+    if 'BanchoBot' in word[0]:
         if 'rolls' in word[1]:
             roll_event(word[1],matchroom)
         elif 'are ready' in word[1]:
             start_event(word[1],matchroom)
         elif 'finished' in word[1]:
             finish_event(word[1],matchroom)
-    elif command[0] is '#ban' and bantime:
+    elif command[0] == '#ban' and bantime:
         ban_map(word[0],command[1],matchroom)
-    elif command[0] is '#pick' and picktime:
+    elif command[0] == '#pick' and picktime:
         pick_map(word[0],command[1],matchroom)
-    elif command[0] is '#firstpick'or command[0] is '#secondpick':
+    elif command[0] == '#firstpick'or command[0] == '#secondpick':
         pick_order(word[0],command[0],matchroom)
-    return hexchat.EAT_HEXCHAT
+    return hexchat.EAT_NONE
 
 
 bothook = hexchat.hook_command("BOTSTART", handler)
