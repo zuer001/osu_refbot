@@ -281,6 +281,7 @@ def roll_event(word,matchroom):
     global team2_roll
     global choosetime
     global rollwinner
+    global rolltime
     words=word.split(' ')
     space_num=len(words)-4
     people=words[0]
@@ -297,10 +298,12 @@ def roll_event(word,matchroom):
         if team1_roll>team2_roll:
             rollwinner=1
             choosetime=True
+            rolltime=False
             matchroom.command('say {} wins the roll'.format(match['team1']))
         elif team2_roll>team1_roll:
             rollwinner=2
             choosetime=True
+            rolltime=False
             matchroom.command('say {} wins the roll'.format(match['team2']))
         else:
             team1_roll=-1
