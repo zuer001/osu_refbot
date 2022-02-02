@@ -134,7 +134,8 @@ def ban_map(people,map,matchroom):
     if next_to_ban ==1:
         if people in match['players']['team1_players']:
             match['banned_maps'].append(map)
-            matchroom.command('say {} banned'.format(map))
+            matchroom.command('say {} bans {}'.format(match['team1'],map))
+            matchroom.command('say !mp aborttimer')
             next_to_ban=2
             match['ban_num']-=1
             if match['ban_num']<=0:
@@ -142,6 +143,10 @@ def ban_map(people,map,matchroom):
                 picktime=True
                 matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
                 matchroom.command('say You have 120 secs to pick a map!')
+                matchroom.command('say !mp timer 120')
+            else:
+                matchroom.command('say Team {}, Please ban a map in 120 secs'.format(match['team2']))
+                matchroom.command('say !mp timer 120')
             return
         else:
             matchroom.command('say wrong person to ban')
@@ -149,7 +154,8 @@ def ban_map(people,map,matchroom):
     else:
         if people in match['players']['team2_players']:
             match['banned_maps'].append(map)
-            matchroom.command('say {} banned'.format(map))
+            matchroom.command('say {} bans {}'.format(match['team2'],map))
+            matchroom.command('say !mp aborttimer')
             next_to_ban=1
             match['ban_num']-=1
             if match['ban_num']<=0:
@@ -157,10 +163,15 @@ def ban_map(people,map,matchroom):
                 picktime=True
                 matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
                 matchroom.command('say You have 120 secs to pick a map!')
+                matchroom.command('say !mp timer 120')
+            else:
+                matchroom.command('say Team {}, Please ban a map in 120 secs'.format(match['team1']))
+                matchroom.command('say !mp timer 120')
             return
         else:
             matchroom.command('say wrong person to ban')
             return
+
 def pick_map(people,map,matchroom):
     global match
     if map in match['banned_maps']:
@@ -181,7 +192,8 @@ def pick_map(people,map,matchroom):
     if next_to_pick==1:
         if people in match['players']['team1_players']:
             match['picked_maps'].append(map)
-            matchroom.command('say {} picked'.format(map))
+            matchroom.command('say {} picked {}'.format(match['team1'],map))
+            matchroom.command('say !mp aborttimer')
             next_to_pick=2
             picktime=False
             matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
@@ -192,7 +204,8 @@ def pick_map(people,map,matchroom):
     elif next_to_pick==2:
         if people in match['players']['team2_players']:
             match['picked_maps'].append(map)
-            matchroom.command('say {} picked'.format(map))
+            matchroom.command('say {} picked {}'.format(match['team2'],map))
+            matchroom.command('say !mp aborttimer')
             next_to_pick=1
             picktime=False
             matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
@@ -200,6 +213,7 @@ def pick_map(people,map,matchroom):
             setmap(map,matchroom)
         else:
             matchroom.command('say wrong person to pick')
+
 def setmap(map,matchroom):
     global match
     matchroom.command('say !mp map {}'.format(match['mappool'][map]))
@@ -213,6 +227,8 @@ def setmap(map,matchroom):
         matchroom.command('say !mp mods NF HR')
     elif 'DT' in map:
         matchroom.command('say !mp mods NF DT')
+    matchroom.command('say !mp timer 180')
+
 def pick_order(people,command,matchroom):
     global match
     global rollwinner
@@ -234,7 +250,9 @@ def pick_order(people,command,matchroom):
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose first to pick'.format(match['team1']))
-                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
+                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue.')
+                matchroom.command('say You have 120 secs to ban a map')
+                matchroom.command('say !mp timer 120')
                 return
             elif command == '#secondpick':
                 next_to_pick=2
@@ -243,6 +261,8 @@ def pick_order(people,command,matchroom):
                 choosetime=False
                 matchroom.command('say {} choose second to pick'.format(match['team1']))
                 matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
+                matchroom.command('say You have 120 secs to ban a map')
+                matchroom.command('say !mp timer 120')
                 return
     elif rollwinner == 2:
         if people not in match['players']['team2_players']:
@@ -256,6 +276,8 @@ def pick_order(people,command,matchroom):
                 choosetime=False
                 matchroom.command('say {} choose first to pick'.format(match['team2']))
                 matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
+                matchroom.command('say You have 120 secs to ban a map')
+                matchroom.command('say !mp timer 120')
                 return
             elif command == '#secondpick':
                 next_to_pick=1
@@ -264,6 +286,9 @@ def pick_order(people,command,matchroom):
                 choosetime=False
                 matchroom.command('say {} choose second to pick'.format(match['team2']))
                 matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
+                matchroom.command('say You have 120 secs to ban a map')
+                matchroom.command('say !mp timer 120')
+                return
 
 def greeting_event(word,matchroom):
     words=word.split(' ')
@@ -271,7 +296,7 @@ def greeting_event(word,matchroom):
     people=words[0]
     for i in range(space_num):
         people=people+'_'+words[i+1]
-    matchroom.command('say Greetings! {} We are in Roll time right now, if you are captain, you can type !roll to roll for your team')
+    matchroom.command('say Greetings, {}! We are in Roll time right now, if you are captain, you can type !roll to roll for your team'.format(people))
 
 def roll_event(word,matchroom):
     global match
@@ -331,10 +356,12 @@ def finish_event(word,matchroom):
         matchroom.command('say {} {}-{} {} | {} wins the match! GGWP to both team!'.format(match['team1'],team1_point,team2_point,match['team2'],match['team2']))
     if team1_score>team2_score:
         team1_point+=1
-        matchroom.command('say {} {}-{} {} | next to pick: {}'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
+        matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
+        matchroom.command('say !mp timer 120')
     elif team2_score>team1_score:
         team2_point+=1
-        matchroom.command('say {} {}-{} {} | next to pick: {}'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
+        matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
+        matchroom.command('say !mp timer 120')
     if team1_point==team2_point and team1_point==(match['BOs']-1)/2:
         matchroom.command('say {} {}-{} {} | The result is a tie, We have to play Tiebreaker'.format(match['team1'],team1_point,team2_point,match['team2']))
         picktime=False
@@ -376,6 +403,7 @@ def count_event(word,matchroom):
         print('team1:{}'.format(team1_num))
         print('team2:{}'.format(team2_num))
         if team2_num==match['players_num'] and team1_num==match['players_num']:
+            matchroom.command('say !mp aborttimer')
             matchroom.command('say !mp start 10')
         else:
             matchroom.command('say inappropriate players')
