@@ -1,4 +1,7 @@
 __module_name__ = 'ref_prototype'
+
+import re
+
 import hexchat
 import threading
 import time
@@ -8,9 +11,10 @@ def init_match():
     match = {
         'matchlink': '',
         'ref': '', #enter your username here
+        'players_num':1,
         'team1': '',
         'team2': '',
-        'BOs': '',
+        'BOs': 7,
         'players':{
             'team1_players': ['YuukiNoTsubasa'],
             'team2_players': ['Truth_you_left']
@@ -21,7 +25,7 @@ def init_match():
         'ban_num':2,
         'teammode': '2',
         'scoremode': '3',
-        'size': '4'
+        'size': '4',
     }
     return match
 
@@ -37,19 +41,35 @@ global highlighthook
 global bantime
 global picktime
 global choosetime
+global starttime
 global mappoolsize
 global team1_roll
 global team2_roll
 global rollwinner
+global team1_num
+global team2_num
+global team1_score
+global team2_score
+global team1_point
+global team2_point
+global real_player_num
 bantime=False
 picktime=False
 choosetime=False
+starttime=False
 next_to_pick=1
 next_to_ban=1
 mappoolsize = (5,3,3,3,2,1)
 team1_roll=-1
 team2_roll=-1
 rollwinner=0
+team1_num=0
+team2_num=0
+team1_score=0
+team2_score=0
+team1_point=0
+team2_point=0
+real_player_num=0
 def channel_switch(tab):
     """returns a context object"""
     return hexchat.find_context(channel = tab)
@@ -155,6 +175,7 @@ def pick_map(people,map,matchroom):
         matchroom.command('say TB cannot be picked')
     global picktime
     global next_to_pick
+    global starttime
     if next_to_pick==1:
         if people in match['players']['team1_players']:
             match['picked_maps'].append(map)
@@ -162,6 +183,7 @@ def pick_map(people,map,matchroom):
             next_to_pick=2
             picktime=False
             matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
+            starttime=True
             setmap(map,matchroom)
         else:
             matchroom.command('say wrong person to pick')
@@ -172,6 +194,7 @@ def pick_map(people,map,matchroom):
             next_to_pick=1
             picktime=False
             matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
+            starttime=True
             setmap(map,matchroom)
         else:
             matchroom.command('say wrong person to pick')
@@ -281,11 +304,83 @@ def roll_event(word,matchroom):
             team1_roll=-1
             team2_roll=-1
             matchroom.command('say TIE! please roll again')
-def start_event(word,matchroom):
-    matchroom.command('say !mp start 10')
+
 def finish_event(word,matchroom):
     global picktime
+    global starttime
+    global team1_point
+    global team2_point
+    global match
+    global team1_score
+    global team2_score
     picktime=True
+    starttime=False
+    if team1_score>team2_score:
+        team1_point+=1
+        matchroom.command('say {}-{}'.format(team1_point,team2_point))
+    elif team2_score>team1_score:
+        team2_point+=1
+        matchroom.command('say {}-{}'.format(team1_point, team2_point))
+    if team1_point==team2_point and team1_point==(match['BOs']-1)/2:
+        matchroom.command('say TB now')
+        picktime=False
+        setmap('TB1',matchroom)
+def count_event(word,matchroom):
+    global match
+    global real_player_num
+    global team1_num
+    global team2_num
+    words = word.split(' ')
+    print(len(words))
+    if 'Host' in word:
+        space_num=len(words)-15
+        if 'Team Red' in word:
+            space_num-=1
+        people=words[9]
+        for i in range(space_num):
+            people=people+'_'+words[i+10]
+        print(people)
+        if people in match['players']['team1_players']:
+            team1_num+=1
+        elif people in match['players']['team2_players']:
+            team2_num+=1
+    else:
+        print(words)
+        space_num = len(words) - 13
+        if 'Team Red' in word:
+            space_num-=1
+        people = words[9]
+        for i in range(space_num):
+            people = people + '_' + words[i + 10]
+        print(people)
+        if people in match['players']['team1_players']:
+            team1_num+=1
+        elif people in match['players']['team2_players']:
+            team2_num+=1
+    real_player_num-=1
+    if real_player_num==0:
+        print('team1:{}'.format(team1_num))
+        print('team2:{}'.format(team2_num))
+        if team2_num==match['players_num'] and team1_num==match['players_num']:
+            matchroom.command('say !mp start 10')
+        else:
+            matchroom.command('say inappropriate players')
+def score_event(word):
+    global match
+    global team1_score
+    global team2_score
+    words = word.split(' ')
+    space_num = len(words) - 6
+    people = words[0]
+    for i in range(space_num):
+        people = people + '_' + words[i + 1]
+    print(people)
+    score=int(re.findall(r'\d+',words[-2])[0])
+    print(score)
+    if people in match['players']['team1_players']:
+        team1_score+=score
+    elif people in match['players']['team2_players']:
+        team2_score+=score
 #handle messages
 def handler(word, word_eol, userdata):
     """ when hooked, word should be returned with a list contains strings
@@ -319,18 +414,31 @@ def messagehandler(word, word_eol, userdata):
     matchroom = hexchat.get_context()
     global bantime
     global picktime
+    global match
+    global starttime
     command = word[1].split(' ')
     print(word[0])
     print(word[1])
     if 'BanchoBot' in word[0]:
         if 'rolls' in word[1]:
             roll_event(word[1],matchroom)
-        elif 'are ready' in word[1]:
-            start_event(word[1],matchroom)
-        elif 'finished' in word[1]:
+        elif 'are ready' in word[1] :
+            matchroom.command('say !mp settings')
+        elif 'has finished' in word[1] :
             finish_event(word[1],matchroom)
         elif 'joined' in word[1]:
             greeting_event(word[1],matchroom)
+        elif 'finished playing' in word[1] :
+            score_event(word[1])
+        elif 'Players:' in word[1] :
+            global real_player_num
+            global team1_num
+            global team2_num
+            real_player_num=int(command[1])
+            team1_num=0
+            team2_num=0
+        elif 'Slot' in word[1] :
+            count_event(word[1],matchroom)
     elif command[0] == '#ban' and bantime:
         ban_map(word[0],command[1],matchroom)
     elif command[0] == '#pick' and picktime:
