@@ -300,11 +300,15 @@ def roll_event(word,matchroom):
             choosetime=True
             rolltime=False
             matchroom.command('say {} wins the roll'.format(match['team1']))
+            matchroom.command('say {} please pick the ban/pick order'.format(match['team1']))
+            matchroom.command('say type #firstpick to pick first or #secondpick to ban first')
         elif team2_roll>team1_roll:
             rollwinner=2
             choosetime=True
             rolltime=False
             matchroom.command('say {} wins the roll'.format(match['team2']))
+            matchroom.command('say {} please pick the ban/pick order'.format(match['team2']))
+            matchroom.command('say type #firstpick to pick first or #secondpick to ban first')
         else:
             team1_roll=-1
             team2_roll=-1
@@ -318,16 +322,21 @@ def finish_event(word,matchroom):
     global match
     global team1_score
     global team2_score
+    global next_to_pick
     picktime=True
     starttime=False
+    if team1_point == (match['BOs']+1)/2:
+        matchroom.command('say {} {}-{} {} | {} wins the match! GGWP to both team!'.format(match['team1'],team1_point,team2_point,match['team2'],match['team1']))
+    elif team2_point == (match['BOs']+1)/2:
+        matchroom.command('say {} {}-{} {} | {} wins the match! GGWP to both team!'.format(match['team1'],team1_point,team2_point,match['team2'],match['team2']))
     if team1_score>team2_score:
         team1_point+=1
-        matchroom.command('say {}-{}'.format(team1_point,team2_point))
+        matchroom.command('say {} {}-{} {} | next to pick: {}'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
     elif team2_score>team1_score:
         team2_point+=1
-        matchroom.command('say {}-{}'.format(team1_point, team2_point))
+        matchroom.command('say {} {}-{} {} | next to pick: {}'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
     if team1_point==team2_point and team1_point==(match['BOs']-1)/2:
-        matchroom.command('say TB now')
+        matchroom.command('say {} {}-{} {} | The result is a tie, We have to play Tiebreaker'.format(match['team1'],team1_point,team2_point,match['team2']))
         picktime=False
         setmap('TB1',matchroom)
 def count_event(word,matchroom):
@@ -432,7 +441,7 @@ def messagehandler(word, word_eol, userdata):
             matchroom.command('say !mp settings')
         elif 'has finished' in word[1] and starttime:
             finish_event(word[1],matchroom)
-        elif 'joined' in word[1]:
+        elif 'joined' in word[1] and rolltime:
             greeting_event(word[1],matchroom)
         elif 'finished playing' in word[1] and starttime:
             score_event(word[1])
