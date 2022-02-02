@@ -53,10 +53,12 @@ global team2_score
 global team1_point
 global team2_point
 global real_player_num
+global rolltime
 bantime=False
 picktime=False
 choosetime=False
 starttime=False
+rolltime=True
 next_to_pick=1
 next_to_ban=1
 mappoolsize = (5,3,3,3,2,1)
@@ -416,21 +418,22 @@ def messagehandler(word, word_eol, userdata):
     global picktime
     global match
     global starttime
+    global rolltime
     command = word[1].split(' ')
     print(word[0])
     print(word[1])
     if 'BanchoBot' in word[0]:
-        if 'rolls' in word[1]:
+        if 'rolls' in word[1] and rolltime:
             roll_event(word[1],matchroom)
-        elif 'are ready' in word[1] :
+        elif 'are ready' in word[1] and starttime:
             matchroom.command('say !mp settings')
-        elif 'has finished' in word[1] :
+        elif 'has finished' in word[1] and starttime:
             finish_event(word[1],matchroom)
         elif 'joined' in word[1]:
             greeting_event(word[1],matchroom)
-        elif 'finished playing' in word[1] :
+        elif 'finished playing' in word[1] and starttime:
             score_event(word[1])
-        elif 'Players:' in word[1] :
+        elif 'Players:' in word[1] and starttime:
             global real_player_num
             global team1_num
             global team2_num
