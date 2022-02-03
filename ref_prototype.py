@@ -1,12 +1,13 @@
 __module_name__ = 'ref_prototype'
 
 import re
-
+import sched
 import hexchat
 import threading
 import time
-
+import json
 #match setup
+
 def init_match():
     match = {
         'matchlink': '',
@@ -30,6 +31,7 @@ def init_match():
     return match
 
 #switch to room tab
+global scheduler
 global next_to_ban
 global next_to_pick
 global bothook
@@ -54,6 +56,9 @@ global team1_point
 global team2_point
 global real_player_num
 global rolltime
+global bantimer
+global picktimer
+global readytimer
 bantime=False
 picktime=False
 choosetime=False
@@ -72,6 +77,52 @@ team2_score=0
 team1_point=0
 team2_point=0
 real_player_num=0
+def ban_timer():
+    matchroom=hexchat.get_context()
+    global match
+    global next_to_ban
+    global scheduler
+    global bantimer
+    if next_to_ban==1:
+        next_to_ban=2
+        matchroom.command('say overtime! Team {}, Please ban a map in 120 secs'.format(match['team2']))
+        matchroom.command('say !mp timer 120')
+        scheduler = sched.scheduler(time.time, time.sleep)
+        bantimer=scheduler.enter(10,1,ban_timer,())
+        scheduler.run()
+    elif next_to_ban==2:
+        next_to_ban=1
+        matchroom.command('say overtime! Team {}, Please ban a map in 120 secs'.format(match['team1']))
+        matchroom.command('say !mp timer 120')
+        scheduler = sched.scheduler(time.time, time.sleep)
+        bantimer = scheduler.enter(10, 1, ban_timer, ())
+        scheduler.run()
+def pick_timer():
+    matchroom = hexchat.get_context()
+    global match
+    global next_to_pick
+    global scheduler
+    global picktimer
+    if next_to_pick==1:
+        next_to_pick=2
+        matchroom.command('say overtime! Team {}, Please pick a map in 120 secs'.format(match['team2']))
+        matchroom.command('say !mp timer 120')
+        scheduler = sched.scheduler(time.time, time.sleep)
+        picktimer=scheduler.enter(10,1,pick_timer,())
+        scheduler.run()
+    if next_to_pick == 2:
+        next_to_pick = 1
+        matchroom.command('say overtime! Team {}, Please pick a map in 120 secs'.format(match['team1']))
+        matchroom.command('say !mp timer 120')
+        scheduler = sched.scheduler(time.time, time.sleep)
+        picktimer = scheduler.enter(10, 1, pick_timer, ())
+        scheduler.run()
+def ready_timer():
+    matchroom = hexchat.get_context()
+    global match
+    global scheduler
+    matchroom.command('say overtime! the match will be started in 30 secs')
+    matchroom.command('say !mp start 30')
 def channel_switch(tab):
     """returns a context object"""
     return hexchat.find_context(channel = tab)
@@ -131,11 +182,15 @@ def ban_map(people,map,matchroom):
     global next_to_ban
     global bantime
     global picktime
+    global bantimer
+    global scheduler
+    global picktimer
     if next_to_ban ==1:
         if people in match['players']['team1_players']:
             match['banned_maps'].append(map)
             matchroom.command('say {} bans {}'.format(match['team1'],map))
             matchroom.command('say !mp aborttimer')
+            scheduler.cancel(bantimer)
             next_to_ban=2
             match['ban_num']-=1
             if match['ban_num']<=0:
@@ -144,9 +199,15 @@ def ban_map(people,map,matchroom):
                 matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
                 matchroom.command('say You have 120 secs to pick a map!')
                 matchroom.command('say !mp timer 120')
+                scheduler = sched.scheduler(time.time, time.sleep)
+                picktimer=scheduler.enter(10, 1, pick_timer, ())
+                scheduler.run()
             else:
                 matchroom.command('say Team {}, Please ban a map in 120 secs'.format(match['team2']))
                 matchroom.command('say !mp timer 120')
+                scheduler = sched.scheduler(time.time, time.sleep)
+                bantimer=scheduler.enter(10, 1, ban_timer, ())
+                scheduler.run()
             return
         else:
             matchroom.command('say wrong person to ban')
@@ -156,6 +217,7 @@ def ban_map(people,map,matchroom):
             match['banned_maps'].append(map)
             matchroom.command('say {} bans {}'.format(match['team2'],map))
             matchroom.command('say !mp aborttimer')
+            scheduler.cancel(bantimer)
             next_to_ban=1
             match['ban_num']-=1
             if match['ban_num']<=0:
@@ -164,9 +226,15 @@ def ban_map(people,map,matchroom):
                 matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
                 matchroom.command('say You have 120 secs to pick a map!')
                 matchroom.command('say !mp timer 120')
+                scheduler = sched.scheduler(time.time, time.sleep)
+                picktimer=scheduler.enter(10, 1, pick_timer, ())
+                scheduler.run()
             else:
                 matchroom.command('say Team {}, Please ban a map in 120 secs'.format(match['team1']))
                 matchroom.command('say !mp timer 120')
+                scheduler = sched.scheduler(time.time, time.sleep)
+                bantimer=scheduler.enter(10, 1, ban_timer, ())
+                scheduler.run()
             return
         else:
             matchroom.command('say wrong person to ban')
@@ -189,11 +257,14 @@ def pick_map(people,map,matchroom):
     global picktime
     global next_to_pick
     global starttime
+    global scheduler
+    global picktimer
     if next_to_pick==1:
         if people in match['players']['team1_players']:
             match['picked_maps'].append(map)
             matchroom.command('say {} picked {}'.format(match['team1'],map))
             matchroom.command('say !mp aborttimer')
+            scheduler.cancel(picktimer)
             next_to_pick=2
             picktime=False
             matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
@@ -206,6 +277,7 @@ def pick_map(people,map,matchroom):
             match['picked_maps'].append(map)
             matchroom.command('say {} picked {}'.format(match['team2'],map))
             matchroom.command('say !mp aborttimer')
+            scheduler.cancel(picktimer)
             next_to_pick=1
             picktime=False
             matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
@@ -216,6 +288,8 @@ def pick_map(people,map,matchroom):
 
 def setmap(map,matchroom):
     global match
+    global scheduler
+    global readytimer
     matchroom.command('say !mp map {}'.format(match['mappool'][map]))
     if 'FM' in map or 'TB' in map:
         matchroom.command('say !mp mods Freemod')
@@ -228,6 +302,9 @@ def setmap(map,matchroom):
     elif 'DT' in map:
         matchroom.command('say !mp mods NF DT')
     matchroom.command('say !mp timer 180')
+    scheduler = sched.scheduler(time.time, time.sleep)
+    readytimer = scheduler.enter(10, 1, ready_timer, ())
+    scheduler.run()
 
 def pick_order(people,command,matchroom):
     global match
@@ -236,6 +313,8 @@ def pick_order(people,command,matchroom):
     global next_to_pick
     global bantime
     global choosetime
+    global scheduler
+    global bantimer
     if choosetime == False:
         return
 
@@ -244,6 +323,9 @@ def pick_order(people,command,matchroom):
             matchroom.command('say wrong person to choose')
             return
         else:
+            scheduler = sched.scheduler(time.time, time.sleep)
+            bantimer=scheduler.enter(10,1,ban_timer,())
+            scheduler.run()
             if command == '#firstpick':
                 next_to_ban=2
                 next_to_pick=1
@@ -269,6 +351,9 @@ def pick_order(people,command,matchroom):
             matchroom.command('say wrong person to choose')
             return
         else:
+            scheduler = sched.scheduler(time.time, time.sleep)
+            bantimer = scheduler.enter(10, 1, ban_timer, ())
+            scheduler.run()
             if command == '#firstpick':
                 next_to_ban=1
                 next_to_pick=2
@@ -348,6 +433,8 @@ def finish_event(word,matchroom):
     global team1_score
     global team2_score
     global next_to_pick
+    global scheduler
+    global picktimer
     picktime=True
     starttime=False
     if team1_point == (match['BOs']+1)/2:
@@ -358,10 +445,16 @@ def finish_event(word,matchroom):
         team1_point+=1
         matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
         matchroom.command('say !mp timer 120')
+        scheduler = sched.scheduler(time.time, time.sleep)
+        picktimer = scheduler.enter(10, 1, pick_timer, ())
+        scheduler.run()
     elif team2_score>team1_score:
         team2_point+=1
         matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
         matchroom.command('say !mp timer 120')
+        scheduler = sched.scheduler(time.time, time.sleep)
+        picktimer = scheduler.enter(10, 1, pick_timer, ())
+        scheduler.run()
     if team1_point==team2_point and team1_point==(match['BOs']-1)/2:
         matchroom.command('say {} {}-{} {} | The result is a tie, We have to play Tiebreaker'.format(match['team1'],team1_point,team2_point,match['team2']))
         picktime=False
@@ -371,6 +464,8 @@ def count_event(word,matchroom):
     global real_player_num
     global team1_num
     global team2_num
+    global scheduler
+    global readytimer
     words = word.split(' ')
     print(len(words))
     if 'Host' in word:
@@ -405,6 +500,7 @@ def count_event(word,matchroom):
         if team2_num==match['players_num'] and team1_num==match['players_num']:
             matchroom.command('say !mp aborttimer')
             matchroom.command('say !mp start 10')
+            scheduler.cancel(readytimer)
         else:
             matchroom.command('say inappropriate players')
 def score_event(word):
