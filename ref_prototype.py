@@ -12,27 +12,26 @@ import json
 
 
 
-def init_match():
+def init_match(players_num=1,team1='',team2='',BOs=3,team1_players=[],team2_players=[],mappool={},ban_num=2,teammode='2',scoremode='3',size='4'):
     match = {
         'matchlink': '',
-        'ref': '', #enter your username here
-        'players_num':1,
-        'team1': '',
-        'team2': '',
-        'BOs': 3,
+        'players_num': players_num,
+        'team1': team1,
+        'team2': team2,
+        'BOs': BOs,
         'players':{
-            'team1_players': ['YuukiNoTsubasa'],
-            'team2_players': ['Truth_you_left']
+            'team1_players': team1_players,
+            'team2_players': team2_players
         },
         'team1_multipliers':[],
         'team2_multipliers':[],
-        'mappool': {},
+        'mappool': mappool,
         'picked_maps': [],
         'banned_maps': [],
-        'ban_num':2,
-        'teammode': '2',
-        'scoremode': '3',
-        'size': '4',
+        'ban_num': ban_num,
+        'teammode': teammode,
+        'scoremode': scoremode,
+        'size': size,
     }
     return match
 
