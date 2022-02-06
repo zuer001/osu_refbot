@@ -5,6 +5,8 @@ import hexchat
 import threading
 import time
 import json
+import os
+
 #match setup
 
 
@@ -33,6 +35,8 @@ def init_match(players_num=1,team1='',team2='',BOs=3,team1_players=[],team2_play
         'scoremode': scoremode,
         'size': size,
     }
+    print("1111")
+    print(os.getcwd())  # 获得当前目录
     return match
 
 #switch to room tab
@@ -186,13 +190,10 @@ def getmatchinfos(name,team1,team2):
 def generate_mappool():
     global mappoolsize
     global match
-    mapname=['NM','HD','HR','DT','FM','TB']
-    index=0
-    for num in mappoolsize:
-        for i in range(num):
-            name=mapname[index]+str(i+1)
-            match['mappool'][name]=index*10+i+1
-        index+=1
+    with open("mappool.json", 'r') as load_f:
+        load_dict = json.load(load_f)
+    print(load_dict)
+    match['mappool']=load_dict
 #ban map
 def ban_map(people,map,matchroom):
     global match
