@@ -475,6 +475,8 @@ def finish_event(word,matchroom):
             picktime = False
             starttime = True
             picktimer.cancel()
+            team1_score=0
+            team2_score=0
             setmap('TB1', matchroom)
             return
         if team1_point == (match['BOs'] + 1) / 2:
@@ -482,6 +484,8 @@ def finish_event(word,matchroom):
                 'say {} {}-{} {} | {} wins the match! GGWP to both team!'.format(match['team1'], team1_point,
                                                                                  team2_point, match['team2'],
                                                                                  match['team1']))
+            team1_score=0
+            team2_score=0
             return
         matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
         matchroom.command('say !mp timer 120')
@@ -496,6 +500,8 @@ def finish_event(word,matchroom):
             picktime = False
             starttime = True
             picktimer.cancel()
+            team1_score=0
+            team2_score=0
             setmap('TB1', matchroom)
             return
         if team2_point == (match['BOs'] + 1) / 2:
@@ -503,6 +509,8 @@ def finish_event(word,matchroom):
                 'say {} {}-{} {} | {} wins the match! GGWP to both team!'.format(match['team1'], team1_point,
                                                                                  team2_point, match['team2'],
                                                                                  match['team2']))
+            team1_score=0
+            team2_score=0
             return
         matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
         matchroom.command('say !mp timer 120')
