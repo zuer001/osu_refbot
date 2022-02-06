@@ -14,7 +14,7 @@ import os
 
 
 
-def init_match(players_num=1,team1='',team2='',BOs=3,team1_players=[],team2_players=[],mappool={},ban_num=2,teammode='2',scoremode='3',size='4'):
+def init_match(players_num=2,team1='',team2='',BOs=9,team1_players=['Miracle','acvyou'],team2_players=['Garden','OsmiumD'],mappool={},ban_num=2,teammode='2',scoremode='3',size='4'):
     match = {
         'matchlink': '',
         'players_num': players_num,
@@ -36,7 +36,7 @@ def init_match(players_num=1,team1='',team2='',BOs=3,team1_players=[],team2_play
         'size': size,
     }
     print("1111")
-    print(os.getcwd())  # 获得当前目录
+    print(os.getcwd())  
     return match
 
 #switch to room tab
@@ -77,7 +77,7 @@ freemod=False
 forcemod=False
 next_to_pick=1
 next_to_ban=1
-mappoolsize = (5,3,3,3,2,1)
+mappoolsize = (5,3,3,4,2,1)
 team1_roll=-1
 team2_roll=-1
 rollwinner=0
@@ -100,32 +100,32 @@ def ban_timer():
         if match['ban_num'] <= 0:
             bantime = False
             picktime = True
-            matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
+            matchroom.command('say Banning time finish! Team {}, type #pick [map] to continue'.format(match['team2']))
             matchroom.command('say You have 120 secs to pick a map!')
             matchroom.command('say !mp timer 120')
-            picktimer = threading.Timer(60, pick_timer)
+            picktimer = threading.Timer(120, pick_timer)
             picktimer.start()
         else:
             next_to_ban=2
             matchroom.command('say overtime! Team {}, Please ban a map in 120 secs'.format(match['team2']))
             matchroom.command('say !mp timer 120')
-            bantimer = threading.Timer(60, ban_timer)
+            bantimer = threading.Timer(120, ban_timer)
             bantimer.start()
     elif next_to_ban==2:
         match['ban_num'] -= 1
         if match['ban_num'] <= 0:
             bantime = False
             picktime = True
-            matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
+            matchroom.command('say Banning time finish! Team {}, type #pick [map] to continue'.format(match['team1']))
             matchroom.command('say You have 120 secs to pick a map!')
             matchroom.command('say !mp timer 120')
-            picktimer = threading.Timer(60, pick_timer)
+            picktimer = threading.Timer(120, pick_timer)
             picktimer.start()
         else:
             next_to_ban = 1
             matchroom.command('say overtime! Team {}, Please ban a map in 120 secs'.format(match['team1']))
             matchroom.command('say !mp timer 120')
-            bantimer = threading.Timer(60, ban_timer)
+            bantimer = threading.Timer(120, ban_timer)
             bantimer.start()
 def pick_timer():
     matchroom = hexchat.get_context()
@@ -137,7 +137,7 @@ def pick_timer():
         matchroom.command('say overtime! Team {}, Please pick a map in 120 secs'.format(match['team2']))
         matchroom.command('say !mp timer 120')
         oldpicktimer=picktimer
-        picktimer = threading.Timer(60, pick_timer)
+        picktimer = threading.Timer(120, pick_timer)
         oldpicktimer.cancel()
         picktimer.start()
     if next_to_pick == 2:
@@ -145,7 +145,7 @@ def pick_timer():
         matchroom.command('say overtime! Team {}, Please pick a map in 120 secs'.format(match['team1']))
         matchroom.command('say !mp timer 120')
         oldpicktimer=picktimer
-        picktimer = threading.Timer(60, pick_timer)
+        picktimer = threading.Timer(120, pick_timer)
         oldpicktimer.cancel()
         picktimer.start()
 def channel_switch(tab):
@@ -222,15 +222,15 @@ def ban_map(people,map,matchroom):
             if match['ban_num']<=0:
                 bantime=False
                 picktime=True
-                matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
+                matchroom.command('say Banning time finish! Team {}, type #pick [map] to continue'.format(match['team1']))
                 matchroom.command('say You have 120 secs to pick a map!')
                 matchroom.command('say !mp timer 120')
-                picktimer =threading.Timer(60,pick_timer)
+                picktimer =threading.Timer(120,pick_timer)
                 picktimer.start()
             else:
                 matchroom.command('say Team {}, Please ban a map in 120 secs'.format(match['team2']))
                 matchroom.command('say !mp timer 120')
-                bantimer = threading.Timer(60,ban_timer)
+                bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
             return
         else:
@@ -247,15 +247,15 @@ def ban_map(people,map,matchroom):
             if match['ban_num']<=0:
                 bantime=False
                 picktime=True
-                matchroom.command('say Banning time finish! Teams, type #pick [map] to continue')
+                matchroom.command('say Banning time finish! Team {}, type #pick [map] to continue'.format(match['team2']))
                 matchroom.command('say You have 120 secs to pick a map!')
                 matchroom.command('say !mp timer 120')
-                picktimer =threading.Timer(60,pick_timer)
+                picktimer =threading.Timer(120,pick_timer)
                 picktimer.start()
             else:
                 matchroom.command('say Team {}, Please ban a map in 120 secs'.format(match['team1']))
                 matchroom.command('say !mp timer 120')
-                bantimer = threading.Timer(60,ban_timer)
+                bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
             return
         else:
@@ -351,10 +351,10 @@ def pick_order(people,command,matchroom):
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose first to pick'.format(match['team1']))
-                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue.')
+                matchroom.command('say Rolling time finish! Team {}, type #ban [map] to continue.'.format(match['team2']))
                 matchroom.command('say You have 120 secs to ban a map')
                 matchroom.command('say !mp timer 120')
-                bantimer = threading.Timer(60,ban_timer)
+                bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
                 return
             elif command == '#secondpick':
@@ -363,10 +363,10 @@ def pick_order(people,command,matchroom):
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose second to pick'.format(match['team1']))
-                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
+                matchroom.command('say Rolling time finish! Team {}, type #ban [map] to continue'.format(match['team1']))
                 matchroom.command('say You have 120 secs to ban a map')
                 matchroom.command('say !mp timer 120')
-                bantimer = threading.Timer(60,ban_timer)
+                bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
                 return
     elif rollwinner == 2:
@@ -380,10 +380,10 @@ def pick_order(people,command,matchroom):
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose first to pick'.format(match['team2']))
-                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
+                matchroom.command('say Rolling time finish! Team {}, type #ban [map] to continue'.format(match['team1']))
                 matchroom.command('say You have 120 secs to ban a map')
                 matchroom.command('say !mp timer 120')
-                bantimer = threading.Timer(60,ban_timer)
+                bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
                 return
             elif command == '#secondpick':
@@ -392,16 +392,16 @@ def pick_order(people,command,matchroom):
                 bantime=True
                 choosetime=False
                 matchroom.command('say {} choose second to pick'.format(match['team2']))
-                matchroom.command('say Rolling time finish! Teams, type #ban [map] to continue')
+                matchroom.command('say Rolling time finish! Team {}, type #ban [map] to continue'.format(match['team2']))
                 matchroom.command('say You have 120 secs to ban a map')
                 matchroom.command('say !mp timer 120')
-                bantimer = threading.Timer(60,ban_timer)
+                bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
                 return
 
 def greeting_event(word,matchroom):
     words=word.split(' ')
-    space_num=len(words)-4
+    space_num=len(words)-8
     people=words[0]
     for i in range(space_num):
         people=people+'_'+words[i+1]
@@ -464,8 +464,8 @@ def finish_event(word,matchroom):
     starttime=False
     freemod=False
     forcemod=False
-    matchroom.command('say {} :{}points'.format(match['team1'],team1_score))
-    matchroom.command('say {} :{}points'.format(match['team2'],team2_score))
+    matchroom.command('say {}: {} points'.format(match['team1'],team1_score))
+    matchroom.command('say {}: {} points'.format(match['team2'],team2_score))
     if team1_score>team2_score:
         team1_point+=1
         if team1_point == team2_point and team1_point == (match['BOs'] - 1) / 2:
@@ -485,7 +485,7 @@ def finish_event(word,matchroom):
             return
         matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
         matchroom.command('say !mp timer 120')
-        picktimer = threading.Timer(60, pick_timer)
+        picktimer = threading.Timer(120, pick_timer)
         picktimer.start()
     elif team2_score>team1_score:
         team2_point+=1
@@ -506,7 +506,7 @@ def finish_event(word,matchroom):
             return
         matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
         matchroom.command('say !mp timer 120')
-        picktimer = threading.Timer(60, pick_timer)
+        picktimer = threading.Timer(120, pick_timer)
         picktimer.start()
 
     team1_score=0
