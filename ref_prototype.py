@@ -14,7 +14,12 @@ import os
 
 
 
-def init_match(players_num=2,team1='',team2='',BOs=9,team1_players=['Miracle','acvyou'],team2_players=['Garden','OsmiumD'],mappool={},ban_num=2,teammode='2',scoremode='3',size='4'):
+def init_match(players_num=2,team1='',team2='',BOs=9,ban_num=2,teammode='2',scoremode='3',size='4'):
+    with open("team.json", 'r') as load_f:
+        load_dict = json.load(load_f)
+    print(load_dict)
+    team1_players=load_dict[team1]
+    team2_players=load_dict[team2]
     match = {
         'matchlink': '',
         'players_num': players_num,
@@ -27,16 +32,16 @@ def init_match(players_num=2,team1='',team2='',BOs=9,team1_players=['Miracle','a
         },
         'team1_multipliers':[],
         'team2_multipliers':[],
-        'mappool': mappool,
+        'mappool': {},
         'picked_maps': [],
         'banned_maps': [],
         'ban_num': ban_num,
         'teammode': teammode,
         'scoremode': scoremode,
         'size': size,
+        'ref':['YuukiNoTsubasa','Truth_you_left']
     }
-    print("1111")
-    print(os.getcwd())  
+    print(team1_players)
     return match
 
 #switch to room tab
@@ -632,9 +637,7 @@ def handler(word, word_eol, userdata):
         return hexchat.EAT_HEXCHAT
     elif word[0] == 'botstart':
         global match
-        match = init_match()
-        match['team1'] = word[2]
-        match['team2'] = word[3]
+        match = init_match(team1=word[2],team2=word[3])
         create_room(word[1],word[2],word[3])
         global messagehook
         messagehook = hexchat.hook_print('Channel Message',messagehandler)
@@ -660,6 +663,7 @@ def messagehandler(word, word_eol, userdata):
     global match
     global starttime
     global rolltime
+    global messagehook
     command = word[1].split(' ')
     print(word[0])
     print(word[1])
@@ -692,6 +696,9 @@ def messagehandler(word, word_eol, userdata):
         pick_map(word[0],command[1],matchroom)
     elif command[0] == '#firstpick'or command[0] == '#secondpick':
         pick_order(word[0],command[0],matchroom)
+    elif command[0] == '#stop' :
+        if word[0] in match['ref']:
+            matchroom.unhook(messagehook)
     return hexchat.EAT_NONE
 
 

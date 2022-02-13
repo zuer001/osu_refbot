@@ -1,12 +1,20 @@
+# coding=utf-8
 import openpyxl
 import json
-table=openpyxl.load_workbook('mappool.xlsx')
-ws=table['Sheet1']
-mappool={}
+import re
+table=openpyxl.load_workbook('team roster.xlsx')
+ws=table['Team Roster']
+team={}
 for i in range(ws.max_row):
-    mod=ws.cell(row=i+1,column=1).value
-    mod=mod+str(ws.cell(row=i+1,column=2).value)
-    mappool[mod]=ws.cell(row=i+1,column=3).value
-print(mappool)
-with open("mappool.json","w") as f:
-     json.dump(mappool,f)
+    name=ws.cell(row=i+1,column=1).value
+    team[name]=[]
+    for j in range(4):
+        player=ws.cell(row=i+1,column=3+j).value
+        if player is not None :
+            if type(player) is int:
+                player=str(player)
+            player=player.replace(' ','_')
+            team[name].append(player)
+print(team)
+with open("team.json","w") as f:
+     json.dump(team,f)
