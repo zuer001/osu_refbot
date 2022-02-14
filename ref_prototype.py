@@ -14,7 +14,7 @@ import os
 
 
 
-def init_match(players_num=2,team1='',team2='',BOs=9,ban_num=2,teammode='2',scoremode='3',size='4'):
+def init_match(players_num=2,team1='',team2='',BOs=11,ban_num=2,teammode='2',scoremode='3',size='4'):
     with open("team.json", 'r') as load_f:
         load_dict = json.load(load_f)
     print(load_dict)
@@ -39,7 +39,6 @@ def init_match(players_num=2,team1='',team2='',BOs=9,ban_num=2,teammode='2',scor
         'teammode': teammode,
         'scoremode': scoremode,
         'size': size,
-        'ref':['YuukiNoTsubasa','Truth_you_left']
     }
     print(team1_players)
     return match
@@ -697,7 +696,7 @@ def messagehandler(word, word_eol, userdata):
     elif command[0] == '#firstpick'or command[0] == '#secondpick':
         pick_order(word[0],command[0],matchroom)
     elif command[0] == '#stop' :
-        if word[0] in match['ref']:
+        if word[0] not in match['players']['team1_players']and word[0] not in match['players']['team2_players']:
             matchroom.unhook(messagehook)
     return hexchat.EAT_NONE
 

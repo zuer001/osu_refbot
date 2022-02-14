@@ -1,39 +1,114 @@
 {
-  "\u961f\u4f0d\u540d": [
-    "\u961f\u957f",
-    "\u961f\u54581",
-    "\u961f\u54582",
-    "\u961f\u54583"
-  ],
-  "testA":["YuukiNoTsubasa"],
-  "testB":["Truth_you_left"],
-  "\u5b89\u5fbdA": ["Firia", "dhui", "Revue_Starlight"],
-  "\u5c71\u4e1cA": ["[Joseph_Jostar]", "[Crz]Makii", "z980838928", "970"],
-  "\u5409\u6797A": ["My_Angel_Anzu", "[_baka_3b_]"],
-  "\u5e7f\u897fA": ["13roil", "jj986544591"],
-  "\u6c5f\u82cfA": ["Hunxin", "Hikawa_Rina"],
-  "\u6c5f\u82cfB": ["Harubi_Lira", "Nagaiyume", "Sand-Star", "-[Yuzi_Mo]-"],
-  "\u4e0a\u6d77A": ["lolol233", "im_a_burger_fox", "Garden", "SurvivorX4"],
-  "\u4e0a\u6d77B": ["Miracle", "Sustain_", "Kongdyy_", "myangelyuiko"],
-  "\u4e0a\u6d77C": ["zmyk", "Moyv"],
-  "\u6e56\u5317A": ["UselessPlayer", "Molli"],
-  "\u6e56\u5317B": ["Zeidad", "Mangent", "Apro1a"],
-  "\u5e7f\u4e1cA": [
-    "Shizaki_Kanon",
-    "Sugiura_Kanata",
-    "Hakumo_Ai",
-    "Hakumo_Shiro"
-  ],
-  "\u5e7f\u4e1cB": ["Azureus", "B_C", "Takagi_San", "CooGic"],
-  "\u5e7f\u4e1cC": ["yuiko122", "[Arctor]", "7White", "OsmiumD"],
-  "\u5e7f\u4e1cD": ["VialVistas", "ShandenOnter", "metuber"],
-  "\u6d77\u5357A": ["-inui_sana-", "Gyro_Zeppeli", "1069", "moe_nyannyan"],
-  "\u4e94\u6e56\u56db\u6d77A": ["Kaname_Madoka", "acvyou", "-xxx_Rumia-"],
-  "\u4e94\u6e56\u56db\u6d77B": ["svein", "Littlestone", "_Miyuu", "Dnwings"],
-  "\u4e94\u6e56\u56db\u6d77C": [
-    "Pomelox",
-    "Waaaaaaa",
-    "MyAngelDiana",
-    "m_u_s_e"
-  ]
+    "\u961f\u4f0d\u540d": [
+        "\u961f\u957f",
+        "\u961f\u54581",
+        "\u961f\u54582",
+        "\u961f\u54583"
+    ],
+    "\u5b89\u5fbdA": [
+        "Firia",
+        "dhui",
+        "Revue_Starlight"
+    ],
+    "\u5c71\u4e1cA": [
+        "[Joseph_Jostar]",
+        "[Crz]Makii",
+        "z980838928",
+        "970"
+    ],
+    "\u5409\u6797A": [
+        "My_Angel_Anzu",
+        "[_baka_3b_]"
+    ],
+    "\u5e7f\u897fA": [
+        "13roil",
+        "jj986544591"
+    ],
+    "\u6c5f\u82cfA": [
+        "Hunxin",
+        "Hikawa_Rina"
+    ],
+    "\u6c5f\u82cfB": [
+        "Harubi_Lira",
+        "Nagaiyume",
+        "Sand-Star",
+        "-[Yuzi_Mo]-"
+    ],
+    "\u4e0a\u6d77A": [
+        "lolol233",
+        "im_a_burger_fox",
+        "Garden",
+        "SurvivorX4"
+    ],
+    "\u4e0a\u6d77B": [
+        "Miracle",
+        "Sustain",
+        "Kongdyy",
+        "myangelyuiko"
+    ],
+    "\u4e0a\u6d77C": [
+        "zmyk",
+        "Moyv"
+    ],
+    "\u6e56\u5317A": [
+        "UselessPlayer",
+        "Molli"
+    ],
+    "\u6e56\u5317B": [
+        "Zeidad",
+        "Mangent",
+        "Apro1a"
+    ],
+    "\u5e7f\u4e1cA": [
+        "Shizaki_Kanon",
+        "Sugiura_Kanata",
+        "Hakumo_Ai",
+        "Hakumo_Shiro"
+    ],
+    "\u5e7f\u4e1cB": [
+        "Azureus",
+        "B_C",
+        "Takagi_San",
+        "CooGic"
+    ],
+    "\u5e7f\u4e1cC": [
+        "yuiko122",
+        "[Arctor]",
+        "7White",
+        "OsmiumD"
+    ],
+    "\u5e7f\u4e1cD": [
+        "VialVistas",
+        "ShandenOnter",
+        "metuber"
+    ],
+    "\u6d77\u5357A": [
+        "-inui_sana-",
+        "Gyro_Zeppeli",
+        "1069",
+        "moe_nyannyan"
+    ],
+    "\u4e94\u6e56\u56db\u6d77A": [
+        "Kaname_Madoka",
+        "acvyou",
+        "-xxx_Rumia-"
+    ],
+    "\u4e94\u6e56\u56db\u6d77B": [
+        "svein",
+        "Littlestone",
+        "_Miyuu",
+        "Dnwings"
+    ],
+    "\u4e94\u6e56\u56db\u6d77C": [
+        "Pomelox",
+        "Waaaaaaa",
+        "MyAngelDiana",
+        "m_u_s_e"
+    ],
+    "\u6d4b\u8bd5A": [
+        "YuukiNoTsubasa"
+    ],
+    "\u6d4b\u8bd5B": [
+        "Truth_you_left"
+    ]
 }
