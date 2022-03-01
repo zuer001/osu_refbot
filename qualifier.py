@@ -1,4 +1,4 @@
-__module_name__ = 'ref_prototype'
+__module_name__ = 'qualifier'
 
 import re
 import hexchat
@@ -14,12 +14,7 @@ import os
 
 
 
-def init_match(players_num=2,team1='',team2='',BOs=11,ban_num=4,teammode='2',scoremode='3',size='6'):
-    with open("team.json", 'r') as load_f:
-        load_dict = json.load(load_f)
-    print(load_dict)
-    team1_players=load_dict[team1]
-    team2_players=load_dict[team2]
+def init_match(players_num=2,team1='',team2='',BOs=11,ban_num=4,teammode='0',scoremode='3',size='4'):
     match = {
         'matchlink': '',
         'players_num': players_num,
@@ -27,8 +22,8 @@ def init_match(players_num=2,team1='',team2='',BOs=11,ban_num=4,teammode='2',sco
         'team2': team2,
         'BOs': BOs,
         'players':{
-            'team1_players': team1_players,
-            'team2_players': team2_players
+            'team1_players': [],
+            'team2_players': []
         },
         'team1_multipliers':[],
         'team2_multipliers':[],
@@ -41,7 +36,6 @@ def init_match(players_num=2,team1='',team2='',BOs=11,ban_num=4,teammode='2',sco
         'size': size,
         'ref':['YuukiNoTsubasa','Truth_you_left']
     }
-    print(team1_players)
     return match
 
 #switch to room tab
@@ -73,6 +67,8 @@ global bantimer
 global picktimer
 global freemod
 global forcemod
+global next_map
+next_map='NM1'
 bantime=False
 picktime=False
 choosetime=False
@@ -158,9 +154,9 @@ def channel_switch(tab):
     return hexchat.find_context(channel = tab)
 
 #create room
-def create_room(acronym,team1,team2):
+def create_room():
     """returns a tag of room channel"""
-    hexchat.command('query -nofocus BanchoBot !mp make {}: ({}) vs ({})'.format(acronym,team1,team2))
+    hexchat.command('query -nofocus BanchoBot !mp make CCT qualifier')
     generate_mappool()
     global roomhook
     roomhook = hexchat.hook_print('Open Context', roomhandler)
@@ -171,23 +167,8 @@ def setup_room(match,matchroom):
     if '#mp' not in matchroom.get_info('channel'):
         return
     matchroom.command('say !mp set {teammode} {scoremode} {size}'.format_map(match))
-    matchroom.command('say !mp mods Freemod')
-    players = []
-    for key in match['players'].keys():
-        for player in match['players'].get(key):
-            players.append(player)
-    for player in players:
-        if player:
-            matchroom.command('query -nofocus {} Your match is Ready! click the link below to join the match'.format(player))
-            matchroom.command('say !mp invite {}'.format(player))
-    match['team1_multipliers']=[]
-    match['team2_multipliers'] = []
-    for i in range(len(match['players']['team1_players'])):
-        match['team1_multipliers'].append(1)
-    for i in range(len(match['players']['team2_players'])):
-        match['team2_multipliers'].append(1)
-    print(match['team1_multipliers'])
-    print(match['team2_multipliers'])
+    global next_map
+    setmap(next_map,matchroom)
 #retrieve match infos
 def getmatchinfos(name,team1,team2):
     pass
@@ -198,7 +179,7 @@ def getmatchinfos(name,team1,team2):
 def generate_mappool():
     global mappoolsize
     global match
-    with open("mappool.json", 'r') as load_f:
+    with open("quamappool.json", 'r') as load_f:
         load_dict = json.load(load_f)
     print(load_dict)
     match['mappool']=load_dict
@@ -468,65 +449,13 @@ def finish_event(word,matchroom):
     global picktimer
     global freemod
     global forcemod
-    picktime=True
-    starttime=False
-    freemod=False
-    forcemod=False
-    matchroom.command('say {}: {} points'.format(match['team1'],team1_score))
-    matchroom.command('say {}: {} points'.format(match['team2'],team2_score))
-    if team1_score>team2_score:
-        team1_point+=1
-        if team1_point == team2_point and team1_point == (match['BOs'] - 1) / 2:
-            matchroom.command(
-                'say {} {}-{} {} | The result is a tie, We have to play Tiebreaker'.format(match['team1'], team1_point,
-                                                                                           team2_point, match['team2']))
-            picktime = False
-            starttime = True
-            picktimer.cancel()
-            team1_score=0
-            team2_score=0
-            setmap('TB1', matchroom)
-            return
-        if team1_point == (match['BOs'] + 1) / 2:
-            matchroom.command(
-                'say {} {}-{} {} | {} wins the match! GGWP to both team!'.format(match['team1'], team1_point,
-                                                                                 team2_point, match['team2'],
-                                                                                 match['team1']))
-            team1_score=0
-            team2_score=0
-            return
-        matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
-        matchroom.command('say !mp timer 120')
-        picktimer = threading.Timer(120, pick_timer)
-        picktimer.start()
-    elif team2_score>team1_score:
-        team2_point+=1
-        if team1_point == team2_point and team1_point == (match['BOs'] - 1) / 2:
-            matchroom.command(
-                'say {} {}-{} {} | The result is a tie, We have to play Tiebreaker'.format(match['team1'], team1_point,
-                                                                                           team2_point, match['team2']))
-            picktime = False
-            starttime = True
-            picktimer.cancel()
-            team1_score=0
-            team2_score=0
-            setmap('TB1', matchroom)
-            return
-        if team2_point == (match['BOs'] + 1) / 2:
-            matchroom.command(
-                'say {} {}-{} {} | {} wins the match! GGWP to both team!'.format(match['team1'], team1_point,
-                                                                                 team2_point, match['team2'],
-                                                                                 match['team2']))
-            team1_score=0
-            team2_score=0
-            return
-        matchroom.command('say {} {}-{} {} | next to pick: {}, you have 120 secs to pick a map'.format(match['team1'],team1_point,team2_point,match['team2'],match['team'+str(next_to_pick)]))
-        matchroom.command('say !mp timer 120')
-        picktimer = threading.Timer(120, pick_timer)
-        picktimer.start()
-
-    team1_score=0
-    team2_score=0
+    global next_map
+    L = list(match['mappool'].keys())
+    for i in range(len(L)):
+        if L[i]==next_map:
+            next_map=L[i+1]
+            break
+    setmap(next_map,matchroom)
 
 def count_event(word,matchroom):
     global match
@@ -638,10 +567,10 @@ def handler(word, word_eol, userdata):
         word[1] is what they said"""
     if not word:
         return hexchat.EAT_HEXCHAT
-    elif word[0] == 'botstart':
+    elif word[0] == 'qualifier':
         global match
-        match = init_match(team1=word[2],team2=word[3])
-        create_room(word[1],word[2],word[3])
+        match = init_match()
+        create_room()
         global messagehook
         messagehook = hexchat.hook_print('Channel Message',messagehandler)
         global yourmessagehook
@@ -671,38 +600,11 @@ def messagehandler(word, word_eol, userdata):
     print(word[0])
     print(word[1])
     if 'BanchoBot' in word[0]:
-        if 'rolls' in word[1] and rolltime:
-            roll_event(word[1],matchroom)
-        elif 'are ready' in word[1] and starttime:
-            matchroom.command('say !mp settings')
-        elif 'has finished' in word[1] and starttime:
+        if 'are ready' in word[1]:
+            matchroom.command('say !mp start 10')
+        elif 'has finished' in word[1]:
             finish_event(word[1],matchroom)
-        elif 'joined' in word[1] and rolltime:
-            greeting_event(word[1],matchroom)
-        elif 'finished playing' in word[1] and starttime:
-            score_event(word[1])
-        elif 'Players:' in word[1] and starttime:
-            global real_player_num
-            global team1_num
-            global team2_num
-            real_player_num=int(command[1])
-            team1_num=0
-            team2_num=0
-            for i in range(match['players_num']):
-                match['team1_multipliers'][i] = 1
-                match['team2_multipliers'][i] = 1
-        elif 'Slot' in word[1] :
-            count_event(word[1],matchroom)
-    elif command[0] == '#ban' and bantime:
-        ban_map(word[0],command[1],matchroom)
-    elif command[0] == '#pick' and picktime:
-        pick_map(word[0],command[1],matchroom)
-    elif command[0] == '#firstpick'or command[0] == '#secondpick':
-        pick_order(word[0],command[0],matchroom)
-    elif command[0] == '#stop' :
-        if word[0] in match['ref']:
-            matchroom.unhook(messagehook)
     return hexchat.EAT_NONE
 
 
-bothook = hexchat.hook_command("BOTSTART", handler)
+bothook = hexchat.hook_command("QUALIFIER", handler)
