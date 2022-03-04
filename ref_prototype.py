@@ -485,7 +485,7 @@ def finish_event(word,matchroom):
             picktimer.cancel()
             team1_score=0
             team2_score=0
-            setmap('TB1', matchroom)
+            setmap('TB', matchroom)
             return
         if team1_point == (match['BOs'] + 1) / 2:
             matchroom.command(
@@ -510,7 +510,7 @@ def finish_event(word,matchroom):
             picktimer.cancel()
             team1_score=0
             team2_score=0
-            setmap('TB1', matchroom)
+            setmap('TB', matchroom)
             return
         if team2_point == (match['BOs'] + 1) / 2:
             matchroom.command(
