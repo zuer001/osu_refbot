@@ -74,6 +74,10 @@ global picktimer
 global freemod
 global forcemod
 global lastgame
+global bantimer_exists
+global picktimer_exists
+bantimer_exists=False
+picktimer_exists=False
 bantime=False
 picktime=False
 choosetime=False
@@ -224,6 +228,7 @@ def ban_map(people,map,matchroom):
     global picktime
     global bantimer
     global picktimer
+    global picktimer_exists
     if next_to_ban ==1:
         if people in match['players']['team1_players']:
             match['banned_maps'].append(map)
@@ -240,6 +245,7 @@ def ban_map(people,map,matchroom):
                 matchroom.command('say !mp timer 120')
                 picktimer =threading.Timer(120,pick_timer)
                 picktimer.start()
+                picktimer_exists=True
             else:
                 matchroom.command('say Team {}, Please ban a map in 120 secs'.format(match['team2']))
                 matchroom.command('say !mp timer 120')
@@ -265,6 +271,7 @@ def ban_map(people,map,matchroom):
                 matchroom.command('say !mp timer 120')
                 picktimer =threading.Timer(120,pick_timer)
                 picktimer.start()
+                picktimer_exists = True
             else:
                 matchroom.command('say Team {}, Please ban a map in 120 secs'.format(match['team1']))
                 matchroom.command('say !mp timer 120')
@@ -357,6 +364,7 @@ def pick_order(people,command,matchroom):
     global bantime
     global choosetime
     global bantimer
+    global bantimer_exists
     if choosetime == False:
         return
 
@@ -376,6 +384,7 @@ def pick_order(people,command,matchroom):
                 matchroom.command('say !mp timer 120')
                 bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
+                bantimer_exists=True
                 return
             elif command == '#secondpick':
                 next_to_pick=2
@@ -388,6 +397,7 @@ def pick_order(people,command,matchroom):
                 matchroom.command('say !mp timer 120')
                 bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
+                bantimer_exists=True
                 return
     elif rollwinner == 2:
         if people not in match['players']['team2_players']:
@@ -405,6 +415,7 @@ def pick_order(people,command,matchroom):
                 matchroom.command('say !mp timer 120')
                 bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
+                bantimer_exists=True
                 return
             elif command == '#secondpick':
                 next_to_pick=1
@@ -417,6 +428,7 @@ def pick_order(people,command,matchroom):
                 matchroom.command('say !mp timer 120')
                 bantimer = threading.Timer(120,ban_timer)
                 bantimer.start()
+                bantimer_exists=True
                 return
 
 def greeting_event(word,matchroom):
@@ -716,7 +728,6 @@ def roomhandler(word, word_eol, userdata):
         setup_room(match,matchroom)
     return hexchat.EAT_HEXCHAT
 
-
 def messagehandler(word, word_eol, userdata):
     matchroom = hexchat.get_context()
     global bantime
@@ -729,6 +740,8 @@ def messagehandler(word, word_eol, userdata):
     global messagehook
     global yourmessagehook
     global highlighthook
+    global bantimer_exists
+    global picktimer_exists
     command = word[1].split(' ')
     print(word[0])
     print(word[1])
@@ -770,9 +783,9 @@ def messagehandler(word, word_eol, userdata):
             hexchat.unhook(messagehook)
             hexchat.unhook(yourmessagehook)
             hexchat.unhook(highlighthook)
-            if isinstance( bantimer):
+            if bantimer_exists:
                 bantimer.cancel()
-            if isinstance(picktimer):
+            if picktimer_exists:
                 picktimer.cancel()
     return hexchat.EAT_NONE
 
