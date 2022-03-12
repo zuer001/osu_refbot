@@ -773,8 +773,9 @@ def messagehandler(word, word_eol, userdata):
             real_player_num=int(command[1])
             team1_num=0
             team2_num=0
-            for i in range(match['players_num']):
+            for i in range(match['team1_multipliers']):
                 match['team1_multipliers'][i] = 1
+            for i in range(match['team2_multipliers']):
                 match['team2_multipliers'][i] = 1
         elif 'Slot' in word[1] :
             count_event(word[1],matchroom)
