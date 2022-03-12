@@ -187,7 +187,7 @@ def setup_room(match,matchroom):
             players.append(player)
     for player in players:
         if player:
-            time.sleep(2)
+
             matchroom.command('query -nofocus {} Your match is Ready! click the link below to join the match'.format(player))
             matchroom.command('say !mp invite {}'.format(player))
     match['team1_multipliers']=[]
@@ -588,20 +588,25 @@ def count_event(word,matchroom):
         if 'Hard' in mods[-1] or 'Flash' in mods[-1]or 'Hidden' in mods[-1]or 'Easy' in mods[-1]:
             if people in match['players']['team1_players']:
                 team1_num+=1
+                index = match['players']['team1_players'].index(people)
+                match['team1_multipliers'][index] = 1
                 if'Easy' in mods[-1]:
                     index=match['players']['team1_players'].index(people)
-                    match['team1_multipliers'][index]=match['team1_multipliers'][index]*1.75
+                    match['team1_multipliers'][index]=1.75
                 if 'Flash' in mods[-1]:
                     index = match['players']['team1_players'].index(people)
-                    match['team1_multipliers'][index] = match['team1_multipliers'][index]*2
+                    match['team1_multipliers'][index] =2
+
             elif people in match['players']['team2_players']:
                 team2_num+=1
+                index = match['players']['team2_players'].index(people)
+                match['team2_multipliers'][index] = 1
                 if 'Easy' in mods[-1]:
                     index = match['players']['team2_players'].index(people)
-                    match['team2_multipliers'][index] = match['team2_multipliers'][index] * 1.75
+                    match['team2_multipliers'][index] = 1.75
                 if 'Flash' in mods[-1]:
                     index = match['players']['team2_players'].index(people)
-                    match['team2_multipliers'][index] = match['team2_multipliers'][index] * 2
+                    match['team2_multipliers'][index] = 2
             real_player_num-=1
             if real_player_num==0:
                 print('team1:{}'.format(team1_num))
@@ -616,20 +621,24 @@ def count_event(word,matchroom):
     else:
         if people in match['players']['team1_players']:
             team1_num += 1
+            index = match['players']['team1_players'].index(people)
+            match['team1_multipliers'][index] = 1
             if 'Easy' in mods[-1]:
                 index = match['players']['team1_players'].index(people)
-                match['team1_multipliers'][index] = match['team1_multipliers'][index] * 1.75
+                match['team1_multipliers'][index] =  1.75
             if 'Flash' in mods[-1]:
                 index = match['players']['team1_players'].index(people)
-                match['team1_multipliers'][index] = match['team1_multipliers'][index] * 2
+                match['team1_multipliers'][index] = 2
         elif people in match['players']['team2_players']:
             team2_num += 1
+            index = match['players']['team2_players'].index(people)
+            match['team2_multipliers'][index] = 1
             if 'Easy' in mods[-1]:
                 index = match['players']['team2_players'].index(people)
-                match['team2_multipliers'][index] = match['team2_multipliers'][index] * 1.75
+                match['team2_multipliers'][index] =  1.75
             if 'Flash' in mods[-1]:
                 index = match['players']['team2_players'].index(people)
-                match['team2_multipliers'][index] = match['team2_multipliers'][index] * 2
+                match['team2_multipliers'][index] = 2
         real_player_num -= 1
         if real_player_num == 0:
             print('team1:{}'.format(team1_num))
