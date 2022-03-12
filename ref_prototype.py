@@ -73,6 +73,7 @@ global bantimer
 global picktimer
 global freemod
 global forcemod
+global lastgame
 bantime=False
 picktime=False
 choosetime=False
@@ -93,6 +94,10 @@ team2_score=0
 team1_point=0
 team2_point=0
 real_player_num=0
+lastgame={
+    'winner':'',
+    'map':''
+}
 def ban_timer():
     matchroom=hexchat.get_context()
     global match
@@ -284,17 +289,15 @@ def pick_map(people,map,matchroom):
         matchroom.command('say not in mappool')
         print(match)
         return
-    if 'FM' in map:
-        freemod=True
-    elif 'TB' in map:
+
+    if 'TB' in map:
         matchroom.command('say TB cannot be picked')
         return
-    else:
-        forcemod=True
     global picktime
     global next_to_pick
     global starttime
     global picktimer
+    global lastgame
     if next_to_pick==1:
         if people in match['players']['team1_players']:
             match['picked_maps'].append(map)
@@ -306,6 +309,7 @@ def pick_map(people,map,matchroom):
             matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
             starttime=True
             setmap(map,matchroom)
+            lastgame['map']=map
         else:
             matchroom.command('say wrong person to pick')
     elif next_to_pick==2:
@@ -319,22 +323,30 @@ def pick_map(people,map,matchroom):
             matchroom.command('say Picking time finish! Please Get your teams Ready in 180 secs!')
             starttime=True
             setmap(map,matchroom)
+            lastgame['map'] = map
         else:
             matchroom.command('say wrong person to pick')
 
 def setmap(map,matchroom):
     global match
+    global freemod
+    global forcemod
     matchroom.command('say !mp map {}'.format(match['mappool'][map]))
     if 'FM' in map or 'TB' in map:
         matchroom.command('say !mp mods Freemod')
+        freemod=True
     elif 'NM' in map:
         matchroom.command('say !mp mods NF')
+        forcemod=True
     elif 'HD' in map:
         matchroom.command('say !mp mods NF HD')
+        forcemod=True
     elif 'HR' in map:
         matchroom.command('say !mp mods NF HR')
+        forcemod=True
     elif 'DT' in map:
         matchroom.command('say !mp mods NF DT')
+        forcemod=True
     matchroom.command('say !mp timer 180')
 
 def pick_order(people,command,matchroom):
@@ -468,14 +480,17 @@ def finish_event(word,matchroom):
     global picktimer
     global freemod
     global forcemod
+    global lastgame
     picktime=True
     starttime=False
     freemod=False
     forcemod=False
     matchroom.command('say {}: {} points'.format(match['team1'],team1_score))
     matchroom.command('say {}: {} points'.format(match['team2'],team2_score))
+
     if team1_score>team2_score:
         team1_point+=1
+        lastgame['winner'] ='team1'
         if team1_point == team2_point and team1_point == (match['BOs'] - 1) / 2:
             matchroom.command(
                 'say {} {}-{} {} | The result is a tie, We have to play Tiebreaker'.format(match['team1'], team1_point,
@@ -501,6 +516,7 @@ def finish_event(word,matchroom):
         picktimer.start()
     elif team2_score>team1_score:
         team2_point+=1
+        lastgame['winner'] ='team2'
         if team1_point == team2_point and team1_point == (match['BOs'] - 1) / 2:
             matchroom.command(
                 'say {} {}-{} {} | The result is a tie, We have to play Tiebreaker'.format(match['team1'], team1_point,
@@ -631,6 +647,48 @@ def score_event(word):
         score=score*match['team2_multipliers'][index]
         print(score)
         team2_score+=score
+def rematch_event(matchroom):
+    global match
+    global team1_point
+    global team2_point
+    global lastgame
+    global picktimer
+    global picktime
+    global starttime
+    picktimer.cancel()
+    picktime=False
+    starttime=True
+    setmap(lastgame['map'],matchroom)
+    if lastgame['winner']=='team1':
+        team1_point-=1
+        matchroom.command('say rematch! {} {}-{} {}'.format(match['team1'],team1_point,team2_point,match['team2']))
+    elif lastgame['winner']=='team2':
+        team2_point-=1
+        matchroom.command('say rematch! {} {}-{} {}'.format(match['team1'], team1_point, team2_point, match['team2']))
+def replace_event(old,new,matchroom):
+    global match
+    if old in match['players']['team1_players']:
+        for i,item in enumerate(match['players']['team1_players']):
+            if item==old:
+                match['players']['team1_players'][i]=new
+                matchroom.command('say replaced {} to {}'.format(old,new))
+                with open("team.json", 'r') as load_f:
+                    load_dict = json.load(load_f)
+                load_dict[match['team1']]=match['players']['team1_players']
+                with open("team.json", "w") as f:
+                    json.dump(load_dict, f)
+    elif old in match['players']['team2_players']:
+        for i,item in enumerate(match['players']['team2_players']):
+            if item==old:
+                match['players']['team2_players'][i]=new
+                matchroom.command('say replaced {} to {}'.format(old, new))
+                with open("team.json", 'r') as load_f:
+                    load_dict = json.load(load_f)
+                load_dict[match['team2']]=match['players']['team2_players']
+                with open("team.json", "w") as f:
+                    json.dump(load_dict, f)
+    else:
+        matchroom.command('say did not find {}'.format(old))
 #handle messages
 def handler(word, word_eol, userdata):
     """ when hooked, word should be returned with a list contains strings
@@ -663,10 +721,14 @@ def messagehandler(word, word_eol, userdata):
     matchroom = hexchat.get_context()
     global bantime
     global picktime
+    global picktimer
+    global bantimer
     global match
     global starttime
     global rolltime
     global messagehook
+    global yourmessagehook
+    global highlighthook
     command = word[1].split(' ')
     print(word[0])
     print(word[1])
@@ -693,6 +755,10 @@ def messagehandler(word, word_eol, userdata):
                 match['team2_multipliers'][i] = 1
         elif 'Slot' in word[1] :
             count_event(word[1],matchroom)
+    elif word[0] in match['ref'] and command[0]=='#rematch':
+        rematch_event(matchroom)
+    elif word[0] in match['ref'] and command[0] == '#replace':
+        replace_event(command[1],command[2],matchroom)
     elif command[0] == '#ban' and bantime:
         ban_map(word[0],command[1],matchroom)
     elif command[0] == '#pick' and picktime:
@@ -701,7 +767,13 @@ def messagehandler(word, word_eol, userdata):
         pick_order(word[0],command[0],matchroom)
     elif command[0] == '#stop' :
         if word[0] in match['ref']:
-            matchroom.unhook(messagehook)
+            hexchat.unhook(messagehook)
+            hexchat.unhook(yourmessagehook)
+            hexchat.unhook(highlighthook)
+            if isinstance( bantimer):
+                bantimer.cancel()
+            if isinstance(picktimer):
+                picktimer.cancel()
     return hexchat.EAT_NONE
 
 

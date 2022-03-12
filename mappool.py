@@ -11,3 +11,6 @@ for i in range(ws.max_row):
 print(mappool)
 with open("mappool.json","w") as f:
      json.dump(mappool,f)
+with open("mappool.json", 'r') as load_f:
+     load_dict = json.load(load_f)
+     print(load_dict)
