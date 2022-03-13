@@ -175,13 +175,6 @@ def create_room(acronym,team1,team2):
     roomhook = hexchat.hook_print('Open Context', roomhandler)
 
 #setup room
-def invite_players(player,matchroom):
-    argument=[player,matchroom]
-    def invite_player(player,matchroom):
-        matchroom.command('say !mp invite {}'.format(player))
-    invite_timer = threading.Timer(10,invite_player,args=argument)
-    invite_timer.start()
-
 def setup_room(match,matchroom):
     """setup match and invites players"""
     if '#mp' not in matchroom.get_info('channel'):
@@ -194,8 +187,9 @@ def setup_room(match,matchroom):
             players.append(player)
     for player in players:
         if player:
-            matchroom.command('query -nofocus {} Your match is Ready! click the link below to join the match'.format(player))
-            invite_players(player,matchroom)
+
+            matchroom.command('query -nofocus {} Your match is Ready! click the link above to join the match'.format(player))
+            matchroom.command('say !mp invite {}'.format(player))
     match['team1_multipliers']=[]
     match['team2_multipliers'] = []
     for i in range(len(match['players']['team1_players'])):
