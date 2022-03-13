@@ -179,7 +179,7 @@ def invite_players(player,matchroom):
     def invite_player(player,matchroom):
         matchroom.command('say !mp invite {}'.format(player))
         return
-    invite_timer = threading.Timer(3,invite_player,args=[player,matchroom])
+    invite_timer = threading.Timer(3,invite_players,args=[player,matchroom])
     invite_timer.start()
 
 def setup_room(match,matchroom):
