@@ -726,7 +726,7 @@ def handler(word, word_eol, userdata):
         return hexchat.EAT_HEXCHAT
     elif word[0] == 'botstart':
         global match
-        match = init_match(team1=word[2],team2=word[3])
+        match = init_match(team1=word[2],team2=word[3],BOs=int(word[4]))
         create_room(word[1],word[2],word[3])
         global messagehook
         messagehook = hexchat.hook_print('Channel Message',messagehandler)
