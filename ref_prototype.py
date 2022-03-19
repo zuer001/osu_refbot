@@ -195,7 +195,7 @@ def setup_room(match,matchroom):
     for player in players:
         if player:
             matchroom.command('query -nofocus {} Your match is Ready! click the link below to join the match'.format(player))
-            invite_players(player,matchroom)
+            matchroom.command('say !mp invite {}'.format(player))
     match['team1_multipliers']=[]
     match['team2_multipliers'] = []
     for i in range(len(match['players']['team1_players'])):
