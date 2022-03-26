@@ -8,12 +8,6 @@ import json
 import os
 
 #match setup
-
-
-
-
-
-
 def init_match(players_num=2,team1='',team2='',BOs=11,ban_num=4,teammode='2',scoremode='3',size='6'):
     with open("team.json", 'r') as load_f:
         load_dict = json.load(load_f)
@@ -102,6 +96,20 @@ lastgame={
     'winner':'',
     'map':''
 }
+
+def debug(argument):
+    #change match identities, such as players, mappools, etc..
+    #eg: debug(match['mappool']['NM1'] = 1960429)
+    #    meaning change NM1 bid to 1960429
+    #    to call this function, use #debug [yourcommand]
+    global match
+    hexchat.prnt('supported match arguments are "players_num","team1","team2","BOs","players","team1_multipliers","team2_multipliers","picked_maps","banned_maps",etc')
+    try:
+        exec(argument)
+        hexchat.prnt('execution went good!')
+    except Exception as e:
+        hexchat.prnt("you made some mistakes, weren't you?")
+
 def ban_timer():
     matchroom=hexchat.get_context()
     global match
@@ -654,6 +662,7 @@ def count_event(word,matchroom):
                 matchroom.command('say !mp start 10')
             else:
                 matchroom.command('say inappropriate players')
+
 def score_event(word):
     global match
     global team1_score
@@ -675,6 +684,7 @@ def score_event(word):
         score=score*match['team2_multipliers'][index]
         print(score)
         team2_score+=score
+
 def rematch_event(matchroom):
     global match
     global team1_point
@@ -693,6 +703,7 @@ def rematch_event(matchroom):
     elif lastgame['winner']=='team2':
         team2_point-=1
         matchroom.command('say rematch! {} {}-{} {}'.format(match['team1'], team1_point, team2_point, match['team2']))
+
 def replace_event(old,new,matchroom):
     global match
     if old in match['players']['team1_players']:
@@ -791,6 +802,8 @@ def messagehandler(word, word_eol, userdata):
         rematch_event(matchroom)
     elif word[0] in match['ref'] and command[0] == '#replace':
         replace_event(command[1],command[2],matchroom)
+    elif word[0] in match['ref'] and command[0] == '#debug':
+        debug(command[1:].join(' '))
     elif command[0] == '#ban' and bantime:
         ban_map(word[0],command[1],matchroom)
     elif command[0] == '#pick' and picktime:
