@@ -803,7 +803,7 @@ def messagehandler(word, word_eol, userdata):
     elif word[0] in match['ref'] and command[0] == '#replace':
         replace_event(command[1],command[2],matchroom)
     elif word[0] in match['ref'] and command[0] == '#debug':
-        debug(command[1:].join(' '))
+        debug(' '.join(command[1:]))
     elif command[0] == '#ban' and bantime:
         ban_map(word[0],command[1],matchroom)
     elif command[0] == '#pick' and picktime:
