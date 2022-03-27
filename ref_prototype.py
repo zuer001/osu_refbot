@@ -354,21 +354,30 @@ def setmap(map,matchroom):
     global freemod
     global forcemod
     matchroom.command('say !mp map {}'.format(match['mappool'][map]))
-    if 'FM' in map or 'TB' in map:
+    if 'FM' in map:
         matchroom.command('say !mp mods Freemod')
         freemod=True
+        forcemod=False
+    elif 'TB' in map:
+        matchroom.command('say !mp mods Freemod')
+        forcemod = True
+        freemod = False
     elif 'NM' in map:
         matchroom.command('say !mp mods NF')
         forcemod=True
+        freemod=False
     elif 'HD' in map:
         matchroom.command('say !mp mods NF HD')
         forcemod=True
+        freemod=False
     elif 'HR' in map:
         matchroom.command('say !mp mods NF HR')
         forcemod=True
+        freemod=False
     elif 'DT' in map:
         matchroom.command('say !mp mods NF DT')
         forcemod=True
+        freemod=False
     matchroom.command('say !mp timer 180')
 
 def pick_order(people,command,matchroom):
